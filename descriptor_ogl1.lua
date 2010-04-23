@@ -1,7 +1,9 @@
+data = {
+
 pointSize = {
   params = {float},
 },
-polygonMode = {
+--[=[polygonMode = {
   params = {enum, enum},
   validity = {
       "FRONT BACK FRONT_AND_BACK",
@@ -10,7 +12,7 @@ polygonMode = {
 },
 texImage = {
   {
-    function = "glTexImage1D",
+    func = "glTexImage1D",
     params = {enum, int, int, int, int, enum, enum, table_data},
     names = {nil, nil, nil, "width", nil, "format", "type", "data"},
     custom = {nil, nil, nil, nil, nil, nil, nil, 
@@ -37,12 +39,13 @@ texImage = {
 },
 color = {
   {
-    function = "glColor3f",
+    func = "glColor3f",
     params = {float, float, float},
   },
   {
-    function = "glColor4f",
+    func = "glColor4f",
     params = {float, float, float},
   },
+},]=]
 
 }
