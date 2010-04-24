@@ -3,7 +3,7 @@
 require "ursa"
 
 ursa.rule{"lgl.cpp", {"lgl_make.lua", "descriptor_ogl1.lua"}, "lua lgl_make.lua"}
-ursa.rule{"lgl.o", "lgl.cpp", ursa.util.system_template{"g++ -c -o $TARGET $SOURCE -DWIN32"}}
+ursa.rule{"lgl.o", "lgl.cpp", ursa.util.system_template{"g++ -c -o $TARGET $SOURCE -DWIN32 -Wall"}}
 
 ursa.command{ursa.command.default, "lgl.o"}
 

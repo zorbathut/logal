@@ -3,14 +3,14 @@ data = {
 pointSize = {
   params = {float},
 },
---[=[polygonMode = {
+polygonMode = {
   params = {enum, enum},
   validity = {
       "FRONT BACK FRONT_AND_BACK",
       "POINT LINE FILL",
   }
 },
-texImage = {
+--[=[texImage = {
   {
     func = "glTexImage1D",
     params = {enum, int, int, int, int, enum, enum, table_data},
