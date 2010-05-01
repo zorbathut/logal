@@ -126,17 +126,30 @@ end
 fil:write("}\n\n")
 
 
-for _, v in pairs(ites) do
-  local dat = data[v]
-  
-  fil:write("static const char help_" .. v .. "[] = \"(gotta write help)\";\n")
-  fil:write("static int lgl_" .. v .. "(lua_State *L) {\n\n")
-  
-  -- first we check the parameter count
-  fil:write("  // first we check the parameter count\n") -- :D
-  fil:write("  if(lua_gettop(L) != " .. #dat.params .. ") {\n")
-  fil:write("    std_error(L, help_" .. v .. ", \"Incorrect number of parameters in gl." .. v .. ". Expected " .. #dat.params .. ", got %d\", lua_gettop(L));\n")
-  fil:write("  }\n\n")
+--[[ how shards look:
+
+do {
+  -- code blah blah
+  if(failure) break;
+}
+
+do {
+}
+
+print_error_message();
+
+-- and that's a bit different from the normal, more useful messages
+
+]]
+
+local function do_shard(dat, name)
+-- first we check the parameter count
+  fil:write("  do {\n\n")
+
+  fil:write("    // first we check the parameter count\n") -- :D
+  fil:write("    if(lua_gettop(L) != " .. #dat.params .. ") {\n")
+  fil:write("      break;\n")
+  fil:write("    }\n\n")
   
   
   local paramlist = {}
@@ -153,14 +166,14 @@ for _, v in pairs(ites) do
     local tinfo = types[typ]
     local param = paramlist[id]
     assert(tinfo)
-    fil:write("  // extract parameter " .. id .. "\n")
-    fil:write("  " .. tinfo.type .. " " .. param .. ";\n")
-    fil:write("  " .. tinfo.stdprocess:gsub("\n", "\n  "):gsub("INDEX", tostring(id)):gsub("HELP", "help_" .. v):gsub("PARAMNAME", param):gsub("FUNCNAME", "gl." .. v) .. "\n\n")
+    fil:write("    // extract parameter " .. id .. "\n")
+    fil:write("    " .. tinfo.type .. " " .. param .. ";\n")
+    fil:write("    " .. tinfo.stdprocess:gsub("\n", "\n    "):gsub("INDEX", tostring(id)):gsub("HELP", "help_" .. name):gsub("PARAMNAME", param):gsub("FUNCNAME", "gl." .. name) .. "\n\n")
   end
   
   -- actually call the function
-  fil:write("  // actually call the function\n")
-  fil:write("  gl" .. v:gsub("^%l", string.upper) .. "(")
+  fil:write("    // actually call the function\n")
+  fil:write("    " .. (dat.func or ("gl" .. name)) .. "(")
   for id, name in ipairs(paramlist) do
     if id > 1 then
       fil:write(", ")
@@ -169,6 +182,26 @@ for _, v in pairs(ites) do
   end
   fil:write(");\n\n")
 
+  fil:write("    return 0;\n")
+  fil:write("  } while(false); // though actually if we get here something has gone very wrong\n\n")
+end
+
+for _, name in pairs(ites) do
+  local dat = data[name]
+  
+  fil:write("static const char help_" .. name .. "[] = \"(gotta write help)\";\n")
+  fil:write("static int lgl_" .. name .. "(lua_State *L) {\n\n")
+  
+  if #dat > 0 then
+    for _, v in ipairs(dat) do
+      do_shard(v, name)
+    end
+  else
+    do_shard(dat, name)
+  end
+
+  fil:write("  std_error(L, help_" .. name .. ", \"Incorrect number of parameters in gl." .. name .. ". Got %d\", lua_gettop(L));\n")
+  
   fil:write("  return 0;\n")
   fil:write("}\n\n")
 end

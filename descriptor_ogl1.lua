@@ -1,14 +1,24 @@
 data = {
 
-pointSize = {
+PointSize = {
   params = {float},
 },
-polygonMode = {
+PolygonMode = {
   params = {enum, enum},
   validity = {
       "FRONT BACK FRONT_AND_BACK",
       "POINT LINE FILL",
   }
+},
+Color = {
+  {
+    func = "glColor3f",
+    params = {float, float, float},
+  },
+  {
+    func = "glColor4f",
+    params = {float, float, float, float},
+  },
 },
 --[=[texImage = {
   {
@@ -37,15 +47,6 @@ polygonMode = {
     }
   }
 },
-color = {
-  {
-    func = "glColor3f",
-    params = {float, float, float},
-  },
-  {
-    func = "glColor4f",
-    params = {float, float, float},
-  },
-},]=]
+]=]
 
 }
