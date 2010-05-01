@@ -1,14 +1,111 @@
 data = {
 
-PointSize = {
-  params = {float},
+Accum = {
+  params = {enum, float},
+  validity = {
+    "ACCUM LOAD ADD MULT RETURN",
+    nil,
+  }
 },
-PolygonMode = {
+ActiveTexture = {
+  params = {enum_offset("TEXTURE", "MAX_TEXTURE_COORDS")},
+},
+AlphaFunc = {
+  params = {enum, float},
+  validity = {
+    "NEVER LESS EQUAL LEQUAL GREATER NOTEQUAL GEQUAL ALWAYS",
+    nil,
+  }
+},
+--[[AreTexturesResident = {},]]
+ArrayElement = {
+  params = {index},
+},
+AttachShader = {
+  params = {program, shader},
+},
+
+Begin = {
+  params = {enum},
+  validity = {
+    "POINTS LINES LINE_STRIP LINE_LOOP TRIANGLES TRIANGLE_STRIP TRIANGLE_FAN QUADS QUAD_STRIP POLYGON",
+  }
+},
+BeginQuery = {
+  params = {enum, query},
+  validity = {
+    "SAMPLES_PASSED",
+    nil,
+  }
+},
+BindAttribLocation = {
+  params = {program, index, string},
+},
+--[[Bitmap = {},]]
+BlendColor = {
+  params = {float, float, float, float},
+},
+BlendEquation = {
+  params = {enum},
+  validity = {
+    "FUNC_ADD FUNC_SUBTRACT FUNC_REVERSE_SUBTRACT MIN MAX",
+  }
+},
+BlendEquationSeparate = {
   params = {enum, enum},
   validity = {
-      "FRONT BACK FRONT_AND_BACK",
-      "POINT LINE FILL",
+    "FUNC_ADD FUNC_SUBTRACT FUNC_REVERSE_SUBTRACT MIN MAX",
+    "FUNC_ADD FUNC_SUBTRACT FUNC_REVERSE_SUBTRACT MIN MAX",
   }
+},
+BlendFunc = {
+  params = {enum, enum},
+  validity = {
+    "ZERO ONE SRC_COLOR ONE_MINUS_SRC_COLOR DST_COLOR ONE_MINUS_DST_COLOR SRC_ALPHA ONE_MINUS_SRC_ALPHA DST_ALPHA ONE_MINUS_DST_ALPHA CONSTANT_COLOR ONE_MINUS_CONSTANT_COLOR CONSTANT_ALPHA ONE_MINUS_CONSTANT_ALPHA SRC_ALPHA_SATURATE",
+    "ZERO ONE SRC_COLOR ONE_MINUS_SRC_COLOR DST_COLOR ONE_MINUS_DST_COLOR SRC_ALPHA ONE_MINUS_SRC_ALPHA DST_ALPHA ONE_MINUS_DST_ALPHA CONSTANT_COLOR ONE_MINUS_CONSTANT_COLOR CONSTANT_ALPHA ONE_MINUS_CONSTANT_ALPHA",
+  }
+},
+BlendFuncSeparate = {
+  params = {enum, enum, enum, enum},
+  validity = {
+    "ZERO ONE SRC_COLOR ONE_MINUS_SRC_COLOR DST_COLOR ONE_MINUS_DST_COLOR SRC_ALPHA ONE_MINUS_SRC_ALPHA DST_ALPHA ONE_MINUS_DST_ALPHA CONSTANT_COLOR ONE_MINUS_CONSTANT_COLOR CONSTANT_ALPHA ONE_MINUS_CONSTANT_ALPHA SRC_ALPHA_SATURATE",
+    "ZERO ONE SRC_COLOR ONE_MINUS_SRC_COLOR DST_COLOR ONE_MINUS_DST_COLOR SRC_ALPHA ONE_MINUS_SRC_ALPHA DST_ALPHA ONE_MINUS_DST_ALPHA CONSTANT_COLOR ONE_MINUS_CONSTANT_COLOR CONSTANT_ALPHA ONE_MINUS_CONSTANT_ALPHA",
+    "ZERO ONE SRC_COLOR ONE_MINUS_SRC_COLOR DST_COLOR ONE_MINUS_DST_COLOR SRC_ALPHA ONE_MINUS_SRC_ALPHA DST_ALPHA ONE_MINUS_DST_ALPHA CONSTANT_COLOR ONE_MINUS_CONSTANT_COLOR CONSTANT_ALPHA ONE_MINUS_CONSTANT_ALPHA SRC_ALPHA_SATURATE",
+    "ZERO ONE SRC_COLOR ONE_MINUS_SRC_COLOR DST_COLOR ONE_MINUS_DST_COLOR SRC_ALPHA ONE_MINUS_SRC_ALPHA DST_ALPHA ONE_MINUS_DST_ALPHA CONSTANT_COLOR ONE_MINUS_CONSTANT_COLOR CONSTANT_ALPHA ONE_MINUS_CONSTANT_ALPHA",
+  }
+},
+--[[BufferSubData = {},]]
+
+CallList = {
+  params = {list},
+},
+--[[CallLists = {},]]
+Clear = {
+  params = {bitmask},
+  validity = {
+    "COLOR_BUFFER_BIT DEPTH_BUFFER_BIT ACCUM_BUFFER_BIT STENCIL_BUFFER_BIT",
+  }
+},
+ClearAccum = {
+  params = {float, float, float, float},
+},
+ClearColor = {
+  params = {float, float, float, float},
+},
+ClearDepth = {
+  params = {float},
+},
+ClearIndex = {
+  params = {float},
+},
+ClearStencil = {
+  params = {int},
+},
+ClientActiveTexture = {
+  params = {enum_offset("TEXTURE", "MAX_TEXTURE_COORDS")},
+},
+ClipPlane = {
+  params = {enum_offset("CLIP_PLANE", "MAX_CLIP_PLANES"), table_fixed("double", 4)},
 },
 Color3 = {
   func = "glColor3f",
@@ -18,6 +115,45 @@ Color4 = {
   func = "glColor4f",
   params = {float, float, float, float},
 },
+-- Color itself defined later on
+ColorMask = {
+  params = {bool, bool, bool, bool},
+},
+ColorMaterial = {
+  params = {enum, enum},
+  validity = {
+    "FRONT BACK FRONT_AND_BACK",
+    "EMISSION AMBIENT DIFFUSE SPECULAR AMBIENT_AND_DIFFUSE",
+  }
+},
+--[[ColorPointer = {},]]
+--[[ColorSubTable = {},]]
+--[[ColorTable = {},]]
+ColorTableParameter = {
+  func = "glColorTableParameterfv",
+  params = {enum, enum, table_fixed("float", 4)},
+  validity = {
+    "COLOR_TABLE POST_CONVOLUTION_COLOR_TABLE POST_COLOR_MATRIX_COLOR_TABLE",
+    "COLOR_TABLE_SCALE COLOR_TABLE_BIAS",
+  }
+},
+CompileShader = {
+  params = {shader},
+},
+
+
+
+PointSize = {
+  params = {float},
+},
+PolygonMode = {
+  params = {enum, enum},
+  validity = {
+    "FRONT BACK FRONT_AND_BACK",
+    "POINT LINE FILL",
+  }
+},
+
 TexImage = {
   {
     func = "glTexImage1D",
