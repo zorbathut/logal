@@ -21,6 +21,7 @@ fil:write(
 #include "lauxlib.h"
 
 #include <stdarg.h>
+#include <stdlib.h>
 
 using namespace std;
 
@@ -37,6 +38,18 @@ static void std_error(lua_State *L, const char *helpdocs, const char *msg, ...) 
   luaL_error(L, buf);
 }
 
+template<typename T> void *snagTable(lua_State *L, int index) {
+  int ct = lua_objlen(L, index);
+  T *memblock = (T*)malloc(sizeof(T) * ct);
+  for(int i = 0; i < ct; i++) {
+    lua_pushnumber(L, i + 1);
+    lua_gettable(L, index);
+    memblock[i] = (T)lua_tonumber(L, -1);
+    lua_pop(L, 1);
+  }
+  return (void*)memblock;
+}
+
 ]])
 
 local types = {}
@@ -45,7 +58,7 @@ types.float = {
 [[if(!(lua_isnumber(L, INDEX)))
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
 PARAMNAME = lua_tonumber(L, INDEX);]],
-  type = "float",
+  type = "GLfloat",
 }
 types.enum = {
   stdprocess = 
@@ -55,6 +68,37 @@ PARAMNAME = enum_retrieve(lua_tostring(L, INDEX));
 if(PARAMNAME == (GLenum)-1)
   std_error(L, HELP, "Unknown enum in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));]],
   type = "GLenum",
+}
+types.int = {
+  stdprocess = 
+[[if(!(lua_isnumber(L, INDEX)))
+  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+PARAMNAME = lua_tonumber(L, INDEX);
+if((double)PARAMNAME != lua_tonumber(L, INDEX))
+  std_error(L, HELP, "Non-integer in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));]],
+  type = "GLint",
+}
+types.int_or_enum = {
+  stdprocess = 
+[[if(lua_isnumber(L, INDEX)) {
+  PARAMNAME = lua_tonumber(L, INDEX);
+  if((double)PARAMNAME != lua_tonumber(L, INDEX))
+    std_error(L, HELP, "Non-integer in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));
+} else if(lua_isstring(L, INDEX)) {
+  PARAMNAME = (GLint)enum_retrieve(lua_tostring(L, INDEX));
+  if(PARAMNAME == -1)
+    std_error(L, HELP, "Unknown enum in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));
+} else {
+  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+}]],
+  type = "GLint",
+}
+types.table_data = {
+  stdprocess =
+[[if(!(lua_istable(L, INDEX)))
+  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");]],
+  type = "void *",
+  custom = true,
 }
 
 local data
@@ -71,22 +115,29 @@ do
   data = descriptor_table.data
 end
 
--- we do a few things here, mostly generating lists of stuff
-local ites = {}
 local enum_list = {}
-for k, v in pairs(data) do
-  -- list of the functions involved
-  table.insert(ites, k)
-  
+local function pull_enums(v)
   -- list of enums in the function
   if v.validity then
     for id, typ in pairs(v.params) do
-      if typ == "enum" and v.validity[id] then
+      if (typ == "enum" or typ == "int_or_enum") and v.validity[id] then
         for enu in v.validity[id]:gmatch("([^%s]+)") do
           enum_list[enu] = true
         end
       end
     end
+  end
+end
+
+-- we do a few things here, mostly generating lists of stuff
+local ites = {}
+for k, v in pairs(data) do
+  -- list of the functions involved
+  table.insert(ites, k)
+  
+  pull_enums(v)
+  for _, chunk in ipairs(v) do
+    pull_enums(chunk)
   end
 end
 table.sort(ites)
@@ -151,7 +202,6 @@ local function do_shard(dat, name)
   fil:write("      break;\n")
   fil:write("    }\n\n")
   
-  
   local paramlist = {}
   for id, typ in ipairs(dat.params) do
     if dat.names and dat.names[id] then
@@ -165,10 +215,25 @@ local function do_shard(dat, name)
   for id, typ in ipairs(dat.params) do
     local tinfo = types[typ]
     local param = paramlist[id]
+    if tinfo.custom then
+      assert(dat.custom and dat.custom[id])
+    end
     assert(tinfo)
     fil:write("    // extract parameter " .. id .. "\n")
     fil:write("    " .. tinfo.type .. " " .. param .. ";\n")
     fil:write("    " .. tinfo.stdprocess:gsub("\n", "\n    "):gsub("INDEX", tostring(id)):gsub("HELP", "help_" .. name):gsub("PARAMNAME", param):gsub("FUNCNAME", "gl." .. name) .. "\n\n")
+  end
+  
+  -- now we do custom parameter init
+  if dat.custom then
+    for id, typ in ipairs(dat.params) do
+      local cst = dat.custom[id]
+      if cst then
+        local param = paramlist[id]
+        fil:write("    // custom init code for parameter " .. id .. "\n")
+        fil:write("    " .. cst.parse:gsub("\n", "\n    "):gsub("INDEX", tostring(id)):gsub("HELP", "help_" .. name):gsub("PARAMNAME", param):gsub("FUNCNAME", "gl." .. name) .. "\n\n")
+      end
+    end
   end
   
   -- actually call the function
@@ -181,6 +246,18 @@ local function do_shard(dat, name)
     fil:write(name)
   end
   fil:write(");\n\n")
+  
+  -- now we do custom parameter cleanup
+  if dat.custom then
+    for id, typ in ipairs(dat.params) do
+      local cst = dat.custom[id]
+      if cst then
+        local param = paramlist[id]
+        fil:write("    // custom cleanup code for parameter " .. id .. "\n")
+        fil:write("    " .. cst.cleanup:gsub("\n", "\n    "):gsub("INDEX", tostring(id)):gsub("HELP", "help_" .. name):gsub("PARAMNAME", param):gsub("FUNCNAME", "gl." .. name) .. "\n\n")
+      end
+    end
+  end
 
   fil:write("    return 0;\n")
   fil:write("  } while(false); // though actually if we get here something has gone very wrong\n\n")
