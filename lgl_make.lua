@@ -87,6 +87,29 @@ PARAMNAME = lua_toboolean(L, INDEX);]],
   type = "GLboolean",
 }
 
+types.typed_data_type = {
+  stdprocess = types.enum.stdprocess,
+  type = types.enum.type,
+  name = "type",
+}
+types.typed_data = {
+  stdprocess =
+[[if(type == GL_UNSIGNED_BYTE || type == GL_BYTE || type == GL_UNSIGNED_BYTE_3_3_2 || type == GL_UNSIGNED_BYTE_2_3_3_REV)
+  PARAMNAME = snagTable<unsigned char>(L, INDEX);
+else if(type == GL_UNSIGNED_SHORT || type == GL_SHORT || type == GL_UNSIGNED_SHORT_5_6_5 || type == GL_UNSIGNED_SHORT_5_6_5_REV || type == GL_UNSIGNED_SHORT_4_4_4_4 || type == GL_UNSIGNED_SHORT_4_4_4_4_REV || type == GL_UNSIGNED_SHORT_5_5_5_1 || type == GL_UNSIGNED_SHORT_1_5_5_5_REV)
+  PARAMNAME = snagTable<short>(L, INDEX);
+else if(type == GL_UNSIGNED_INT || type == GL_INT || type == GL_UNSIGNED_INT_8_8_8_8 || type == GL_UNSIGNED_INT_8_8_8_8_REV || type == GL_UNSIGNED_INT_10_10_10_2 || type == GL_UNSIGNED_INT_2_10_10_10_REV)
+  PARAMNAME = snagTable<int>(L, INDEX);
+else if(type == GL_FLOAT)
+  PARAMNAME = snagTable<float>(L, INDEX);
+else if(type == GL_BITMAP)
+  std_error(L, HELP, "GL_BITMAP not supported in FUNCNAME");
+else
+  std_error(L, HELP, "Unrecognized type in FUNCNAME");]],
+  stdcleanup = [[free(PARAMNAME);]],
+  type = "void *",
+}
+
 types.index = {
   stdprocess = 
 [[if(!(lua_isnumber(L, INDEX)))
@@ -165,6 +188,7 @@ do
 if(lua_objlen(L, INDEX) != FIXEDLEN)
   std_error(L, HELP, "Table size error in FUNCNAME for parameter PARAMNAME - Expected %d, got FIXEDLEN", lua_objlen(L, INDEX));
 PARAMNAME = (TYPE*)snagTable<TYPE>(L, INDEX);]]):gsub("FIXEDLEN", tostring(num)):gsub("TYPE", typ),
+        stdcleanup = [[free(PARAMNAME);]],
         type = typ .. " *",
       }
     end
@@ -204,10 +228,10 @@ end
 local enum_list = {}
 local function pull_enums(v)
   -- list of enums in the function
-  if v.validity then
+  if v.enums then
     for id, typ in pairs(v.params) do
-      if (typ == "enum" or typ == "int_or_enum") and v.validity[id] then
-        for enu in v.validity[id]:gmatch("([^%s]+)") do
+      if v.enums[id] then
+        for enu in v.enums[id]:gmatch("([^%s]+)") do
           enum_list[enu] = true
         end
       end
@@ -223,7 +247,9 @@ for k, v in pairs(data) do
   
   pull_enums(v)
   for _, chunk in ipairs(v) do
-    pull_enums(chunk)
+    if type(chunk) == "table" then
+      pull_enums(chunk)
+    end
   end
 end
 table.sort(ites)
@@ -293,7 +319,7 @@ print_error_message();
 
 ]]
 
-local function do_shard(dat, name)
+local function do_shard(dat, local_name, name)
 -- first we check the parameter count
   fil:write("  do {\n\n")
 
@@ -306,6 +332,8 @@ local function do_shard(dat, name)
   for id, typ in ipairs(dat.params) do
     if dat.names and dat.names[id] then
       table.insert(paramlist, dat.names[id])
+    elseif types[typ].name then
+      table.insert(paramlist, types[typ].name)
     else
       table.insert(paramlist, "param" .. id)
     end
@@ -340,7 +368,15 @@ local function do_shard(dat, name)
   
   -- actually call the function
   fil:write("    // actually call the function\n")
-  fil:write("    " .. (dat.func or ("gl" .. name)) .. "(")
+  local ln
+  if dat.func then
+    ln = dat.func
+  elseif local_name then
+    ln = "gl" .. local_name
+  else
+    ln = "gl" .. name
+  end
+  fil:write("    " .. ln .. "(")
   for id, name in ipairs(paramlist) do
     if id > 1 then
       fil:write(", ")
@@ -361,6 +397,17 @@ local function do_shard(dat, name)
     end
   end
 
+    -- now we do normal cleanup
+  for id, typ in ipairs(dat.params) do
+    local tinfo = types[typ]
+    local param = paramlist[id]
+    assert(tinfo)
+    if tinfo.stdcleanup then
+      fil:write("    // cleanup parameter " .. id .. "\n")
+      fil:write("    " .. tinfo.stdcleanup:gsub("\n", "\n    "):gsub("INDEX", tostring(id)):gsub("HELP", "help_" .. name):gsub("PARAMNAME", param):gsub("FUNCNAME", "gl." .. name) .. "\n\n")
+    end
+  end
+  
   fil:write("    return 0;\n")
   fil:write("  } while(false); // though actually if we get here something has gone very wrong\n\n")
 end
@@ -373,10 +420,14 @@ for _, name in pairs(ites) do
   
   if #dat > 0 then
     for _, v in ipairs(dat) do
-      do_shard(v, name)
+      if type(v) == "table" then
+        do_shard(v, name, name)
+      else
+        do_shard(data[v], v, name)
+      end
     end
   else
-    do_shard(dat, name)
+    do_shard(dat, name, name)
   end
 
   fil:write("  std_error(L, help_" .. name .. ", \"Incorrect number of parameters in gl." .. name .. ". Got %d\", lua_gettop(L));\n")
