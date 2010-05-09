@@ -39,7 +39,7 @@ static void std_error(lua_State *L, const char *helpdocs, const char *msg, ...) 
   luaL_error(L, buf);
 }
 
-template<typename T> void *snagTable(lua_State *L, int index) {
+template<typename T> void *snagTable(lua_State *L, int index, int *ct_out = NULL) {
   int ct = lua_objlen(L, index);
   T *memblock = (T*)malloc(sizeof(T) * ct);
   for(int i = 0; i < ct; i++) {
@@ -48,6 +48,8 @@ template<typename T> void *snagTable(lua_State *L, int index) {
     memblock[i] = (T)lua_tonumber(L, -1);
     lua_pop(L, 1);
   }
+  if(ct_out)
+    *ct_out = ct;
   return (void*)memblock;
 }
 
@@ -110,6 +112,33 @@ else
   std_error(L, HELP, "Unrecognized type in FUNCNAME");]],
   stdcleanup = [[free(PARAMNAME);]],
   type = "void *",
+}
+
+types.rawdata_alignment = {
+  stdprocess =
+[[if(!(lua_isstring(L, INDEX)))
+  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+GLenum alignment = enum_retrieve(lua_tostring(L, INDEX));
+if(alignment == (GLenum)-1)
+  std_error(L, HELP, "Unknown alignment in FUNCNAME for parameter INDEX: %s", lua_tostring(L, INDEX));]],
+  type = {}
+}
+types.rawdata_table = {
+  stdprocess =
+[[if(alignment == GL_UNSIGNED_BYTE || alignment == GL_BYTE) {
+  PARAMNAME2 = snagTable<unsigned char>(L, INDEX, &PARAMNAME1);
+} else if(alignment == GL_UNSIGNED_SHORT || alignment == GL_SHORT) {
+  PARAMNAME2 = snagTable<short>(L, INDEX, &PARAMNAME1);
+  PARAMNAME1 = PARAMNAME1 * sizeof(short);
+} else if(alignment == GL_UNSIGNED_INT || alignment == GL_INT) {
+  PARAMNAME2 = snagTable<int>(L, INDEX, &PARAMNAME1);
+  PARAMNAME1 = PARAMNAME1 * sizeof(int);
+} else if(alignment == GL_FLOAT) {
+  PARAMNAME2 = snagTable<float>(L, INDEX, &PARAMNAME1);
+  PARAMNAME1 = PARAMNAME1 * sizeof(float);
+} else
+  std_error(L, HELP, "Unrecognized type in FUNCNAME");]],
+  type = {"int", "void *"},
 }
 
 types.index = {
@@ -325,34 +354,85 @@ local function do_shard(dat, local_name, name)
 -- first we check the parameter count
   fil:write("  do {\n\n")
 
-  fil:write("    // first we check the parameter count\n") -- :D
-  fil:write("    if(lua_gettop(L) != " .. #dat.params .. ") {\n")
-  fil:write("      break;\n")
-  fil:write("    }\n\n")
-  
+  local paramincount = 0
   local paramlist = {}
   for id, typ in ipairs(dat.params) do
-    if dat.names and dat.names[id] then
-      table.insert(paramlist, dat.names[id])
-    elseif types[typ].name then
-      table.insert(paramlist, types[typ].name)
-    else
-      table.insert(paramlist, "param" .. id)
+    local typcustom = dat.names and dat.names[id]
+    local typbasic = types[typ].name
+    local types = types[typ].type
+    
+    if type(typcustom) == "string" then typcustom = {typcustom} end
+    if type(typbasic) == "string" then typbasic = {typbasic} end
+    if type(types) == "string" then types = {types} end
+    if typcustom then
+      assert(#typcustom == #types)
     end
+    if typbasic then
+      assert(#typbasic == #types)
+    end
+    
+    paramincount = paramincount + #types
+    
+    local realnames = {}
+    for i = 1, #types do
+      local def = "param" .. id
+      if #types > 1 then
+        def = def .. "_" .. i
+      end
+      table.insert(realnames, (typcustom and typcustom[i]) or (typbasic and typbasic[i]) or def)
+    end
+    
+    table.insert(paramlist, realnames)
+  end
+  
+  fil:write("    // first we check the parameter count\n") -- :D
+  fil:write("    if(lua_gettop(L) != " .. paramincount .. ") {\n")
+  fil:write("      break;\n")
+  fil:write("    }\n\n")
+
+  -- hee
+  local convert = {}
+  local function addsub(param, src, dst)
+    local cp = convert[param]
+    convert[param] = function(x) return cp(x):gsub(src, dst) end
+  end
+  for i = 1, #dat.params do
+    convert[i] = function(x) return x end
+    
+    addsub(i, "\n", "\n    ")
+    addsub(i, "FUNCNAME", "gl." .. name)
+    addsub(i, "HELP", "help_" .. name)
   end
   
   -- now we do parameters
   for id, typ in ipairs(dat.params) do
+    addsub(id, "INDEX", tostring(id))
+    
     local tinfo = types[typ]
-    local param = paramlist[id]
     if tinfo.custom then
       assert(dat.custom and dat.custom[id])
     end
     assert(tinfo)
     fil:write("    // extract parameter " .. id .. "\n")
-    fil:write("    " .. tinfo.type .. " " .. param .. ";\n")
+    
+    -- types
+    do
+      local tinf = tinfo.type
+      if type(tinf) == "string" then tinf = {tinf} end
+      
+      for pid = 1, #tinf do
+        addsub(id, "PARAMNAME" .. pid, paramlist[id][pid])
+      
+        fil:write("    " .. tinf[pid] .. " " .. paramlist[id][pid] .. ";\n")
+      end
+      
+      if #tinf == 1 then
+        addsub(id, "PARAMNAME", paramlist[id][1])
+      end
+    end
+    
     if tinfo.stdprocess then
-      fil:write("    " .. tinfo.stdprocess:gsub("\n", "\n    "):gsub("INDEX", tostring(id)):gsub("HELP", "help_" .. name):gsub("PARAMNAME", param):gsub("FUNCNAME", "gl." .. name) .. "\n\n")
+      fil:write("    " .. convert[id](tinfo.stdprocess) .. "\n\n")
     end
   end
   
@@ -363,7 +443,7 @@ local function do_shard(dat, local_name, name)
       if cst and cst.parse then
         local param = paramlist[id]
         fil:write("    // custom init code for parameter " .. id .. "\n")
-        fil:write("    " .. cst.parse:gsub("\n", "\n    "):gsub("INDEX", tostring(id)):gsub("HELP", "help_" .. name):gsub("PARAMNAME", param):gsub("FUNCNAME", "gl." .. name) .. "\n\n")
+        fil:write("    " .. convert[id](cst.parse) .. "\n\n")
       end
     end
   end
@@ -379,11 +459,15 @@ local function do_shard(dat, local_name, name)
     ln = "gl" .. name
   end
   fil:write("    " .. ln .. "(")
-  for id, name in ipairs(paramlist) do
-    if id > 1 then
-      fil:write(", ")
+  local first = true
+  for id, chunk in ipairs(paramlist) do
+    for _, name in pairs(chunk) do
+      if not first then
+        fil:write(", ")
+      end
+      fil:write(name)
+      first = false
     end
-    fil:write(name)
   end
   fil:write(");\n\n")
   
@@ -394,7 +478,7 @@ local function do_shard(dat, local_name, name)
       if cst and cst.cleanup then
         local param = paramlist[id]
         fil:write("    // custom cleanup code for parameter " .. id .. "\n")
-        fil:write("    " .. cst.cleanup:gsub("\n", "\n    "):gsub("INDEX", tostring(id)):gsub("HELP", "help_" .. name):gsub("PARAMNAME", param):gsub("FUNCNAME", "gl." .. name) .. "\n\n")
+        fil:write("    " .. convert[id](cst.cleanup) .. "\n\n")
       end
     end
   end
@@ -406,7 +490,7 @@ local function do_shard(dat, local_name, name)
     assert(tinfo)
     if tinfo.stdcleanup then
       fil:write("    // cleanup parameter " .. id .. "\n")
-      fil:write("    " .. tinfo.stdcleanup:gsub("\n", "\n    "):gsub("INDEX", tostring(id)):gsub("HELP", "help_" .. name):gsub("PARAMNAME", param):gsub("FUNCNAME", "gl." .. name) .. "\n\n")
+      fil:write("    " .. convert[id](tinfo.stdcleanup) .. "\n\n")
     end
   end
   
