@@ -26,17 +26,18 @@ fil:write(
 
 using namespace std;
 
-static void std_error(lua_State *L, const char *helpdocs, const char *msg, ...) __attribute__((format(printf,3,4)));
+static void std_error(lua_State *L, const char *helpdocs, const char *msg, ...) __attribute__((format(printf,3,4), noreturn));
 static void std_error(lua_State *L, const char *helpdocs, const char *msg, ...) {
   char buf[2048];
   strcpy(buf, helpdocs);
-  int len = strlen(buf);
+  size_t len = strlen(buf);
   va_list args;
   va_start(args, msg);
   vsnprintf(buf + len, sizeof(buf) - len, msg, args);
   va_end(args);
   buf[sizeof(buf) - 1] = '\0'; // who bloody well knows
   luaL_error(L, buf);
+  exit(0); // should never reach this
 }
 
 template<typename T> void *snagTable(lua_State *L, int index, int *ct_out = NULL) {
