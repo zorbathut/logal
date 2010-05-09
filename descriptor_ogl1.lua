@@ -477,6 +477,30 @@ EvalPoint2 = {
   params = {int, int},
 },
 
+--[[FeedbackBuffer = {},]] -- this actually writes back to the buffer, and it's unclear how that should work
+Finish = {
+  params = {},
+},
+Flush = {
+  params = {},
+},
+--[[Fog = {},]] -- better overloading needed
+FogCoord = {
+  func = "glFogCoordf",
+  params = {float},
+},
+--[[FogCoordPointer = {},]] -- better client state needed
+FrontFace = {
+  params = {enum},
+  enums = {
+    "CW CCW",
+  }
+},
+Frustum = {
+  params = {float, float, float, float, float, float},
+},
+
+
 PointSize = {
   params = {float},
 },
