@@ -140,6 +140,26 @@ types.rawdata_table = {
   std_error(L, HELP, "Unrecognized type in FUNCNAME");]],
   type = {"int", "void *"},
 }
+types.rawdata_table_indexed = {
+  stdprocess =
+[[if(alignment == GL_UNSIGNED_BYTE || alignment == GL_BYTE) {
+  PARAMNAME2 = snagTable<unsigned char>(L, INDEX, &PARAMNAME1);
+} else if(alignment == GL_UNSIGNED_SHORT || alignment == GL_SHORT) {
+  PARAMNAME2 = snagTable<short>(L, INDEX, &PARAMNAME1);
+  PARAMNAME1 = PARAMNAME1 * sizeof(short);
+  index = index * sizeof(short);
+} else if(alignment == GL_UNSIGNED_INT || alignment == GL_INT) {
+  PARAMNAME2 = snagTable<int>(L, INDEX, &PARAMNAME1);
+  PARAMNAME1 = PARAMNAME1 * sizeof(int);
+  index = index * sizeof(int);
+} else if(alignment == GL_FLOAT) {
+  PARAMNAME2 = snagTable<float>(L, INDEX, &PARAMNAME1);
+  PARAMNAME1 = PARAMNAME1 * sizeof(float);
+  index = index * sizeof(float);
+} else
+  std_error(L, HELP, "Unrecognized type in FUNCNAME");]],
+  type = {"int", "void *"},
+}
 
 types.index = {
   stdprocess = 
