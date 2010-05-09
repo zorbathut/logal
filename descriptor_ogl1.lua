@@ -1,3 +1,18 @@
+--[[
+import re;
+x = """
+GL_TEXTURE_2D,
+                    GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+                    GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+                    GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+                    GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+                    GL_TEXTURE_CUBE_MAP_POSITIVE_Z, or
+                    GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+"""
+
+print(re.sub(",", " ", re.sub("and", "", re.sub("or", "", re.sub(" ", "", re.sub("GL_", "", re.sub("\n", "", x)))))))
+]]
+
 data = {
 
 Accum = {
@@ -314,8 +329,77 @@ CullFace = {
   }
 },
 
-    
-  
+DeleteBuffers = {
+  params = {table("uint")},
+},
+DeleteLists = {
+  params = {list, int},
+},
+DeleteProgram = {
+  params = {program},
+},
+DeleteQueries = {
+  params = {table("uint")},
+},
+DeleteShader = {
+  params = {shader},
+},
+DeleteTextures = {
+  params = {table("uint")},
+},
+DepthFunc = {
+  params = {enum},
+  enums = {
+    "NEVER LESS EQUAL LEQUAL GREATER NOTEQUAL GEQUAL ALWAYS"
+  }
+},
+DepthMask = {
+  params = {bool},
+},
+DepthRange = {
+  params = {float, float},
+},
+DetachShader = {
+  params = {program, shader},
+},
+Disable = {
+  params = {enum},
+  enums = {
+    "ALPHA_TEST AUTO_NORMAL BLEND COLOR_LOGIC_OP COLOR_MATERIAL COLOR_SUM COLOR_TABLE CONVOLUTION_1D CONVOLUTION_2D CULL_FACE DEPTH_TEST DITHER FOG HISTOGRAM INDEX_LOGIC_OP LIGHTING LINE_SMOOTH LINE_STIPPLE MAP1_COLOR_4 MAP1_INDEX MAP1_NORMAL MAP1_TEXTURE_COORD_1 MAP1_TEXTURE_COORD_2 MAP1_TEXTURE_COORD_3 MAP1_TEXTURE_COORD_4 MAP1_VERTEX_3 MAP1_VERTEX_4 MAP2_COLOR_4 MAP2_INDEX MAP2_NORMAL MAP2_TEXTURE_COORD_1 MAP2_TEXTURE_COORD_2 MAP2_TEXTURE_COORD_3 MAP2_TEXTURE_COORD_4 MAP2_VERTEX_3 MAP2_VERTEX_4 MINMAX MULTISAMPLE NORMALIZE POINT_SMOOTH POINT_SPRITE POLYGON_OFFSET_FILL POLYGON_OFFSET_LINE POLYGON_OFFSET_POINT POLYGON_SMOOTH POLYGON_STIPPLE POST_COLOR_MATRIX_COLOR_TABLE POST_CONVOLUTION_COLOR_TABLE RESCALE_NORMAL SAMPLE_ALPHA_TO_COVERAGE SAMPLE_ALPHA_TO_ONE SAMPLE_COVERAGE SEPARABLE_2D SCISSOR_TEST STENCIL_TEST TEXTURE_1D TEXTURE_2D TEXTURE_3D TEXTURE_CUBE_MAP TEXTURE_GEN_Q TEXTURE_GEN_R TEXTURE_GEN_S TEXTURE_GEN_T VERTEX_PROGRAM_POINT_SIZE VERTEX_PROGRAM_TWO_SIDE" -- missing: CLIP_PLANEi LIGHTi 
+  }
+},
+DisableClientState = {
+  params = {enum},
+  enums = {
+    "COLOR_ARRAY EDGE_FLAG_ARRAY FOG_COORD_ARRAY INDEX_ARRAY NORMAL_ARRAY SECONDARY_COLOR_ARRAY TEXTURE_COORD_ARRAY VERTEX_ARRAY",
+  },
+},
+DisableVertexAttribArray = {
+  params = {int},
+},
+DrawArrays = {
+  params = {enum, int, int},
+  enums = {
+    "POINTS LINE_STRIP LINE_LOOP LINES TRIANGLE_STRIP TRIANGLE_FAN TRIANGLES QUAD_STRIP QUADS POLYGON",
+  },
+},
+DrawBuffer = {
+  params = {enum},
+  enums = {
+    "NONE FRONT_LEFT FRONT_RIGHT BACK_LEFT BACK_RIGHT FRONT BACK LEFT RIGHT FRONT_AND_BACK" -- missing: AUXi
+  },
+},
+--[[DrawBuffers = {},]] -- disabled because we need some kind of table(enum) that also supports GL_AUXi and friends
+DrawElements = {
+  params = {enum, typed_data_type, typed_data},
+  enums = {
+    "POINTS LINE_STRIP LINE_LOOP LINES TRIANGLE_STRIP TRIANGLE_FAN TRIANGLES QUAD_STRIP QUADS POLYGON",
+  },
+  insertions = {
+    [2] = "param3_size",
+  }
+},
+
                     
                     
 PointSize = {

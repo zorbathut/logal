@@ -97,14 +97,15 @@ types.typed_data_type = {
 }
 types.typed_data = {
   stdprocess =
-[[if(type == GL_UNSIGNED_BYTE || type == GL_BYTE || type == GL_UNSIGNED_BYTE_3_3_2 || type == GL_UNSIGNED_BYTE_2_3_3_REV)
-  PARAMNAME = snagTable<unsigned char>(L, INDEX);
+[[int PARAMNAME_size;
+if(type == GL_UNSIGNED_BYTE || type == GL_BYTE || type == GL_UNSIGNED_BYTE_3_3_2 || type == GL_UNSIGNED_BYTE_2_3_3_REV)
+  PARAMNAME = snagTable<unsigned char>(L, INDEX, &PARAMNAME_size);
 else if(type == GL_UNSIGNED_SHORT || type == GL_SHORT || type == GL_UNSIGNED_SHORT_5_6_5 || type == GL_UNSIGNED_SHORT_5_6_5_REV || type == GL_UNSIGNED_SHORT_4_4_4_4 || type == GL_UNSIGNED_SHORT_4_4_4_4_REV || type == GL_UNSIGNED_SHORT_5_5_5_1 || type == GL_UNSIGNED_SHORT_1_5_5_5_REV || type == GL_2_BYTES)
-  PARAMNAME = snagTable<short>(L, INDEX);
+  PARAMNAME = snagTable<short>(L, INDEX, &PARAMNAME_size);
 else if(type == GL_UNSIGNED_INT || type == GL_INT || type == GL_UNSIGNED_INT_8_8_8_8 || type == GL_UNSIGNED_INT_8_8_8_8_REV || type == GL_UNSIGNED_INT_10_10_10_2 || type == GL_UNSIGNED_INT_2_10_10_10_REV || type == GL_4_BYTES)
-  PARAMNAME = snagTable<int>(L, INDEX);
+  PARAMNAME = snagTable<int>(L, INDEX, &PARAMNAME_size);
 else if(type == GL_FLOAT)
-  PARAMNAME = snagTable<float>(L, INDEX);
+  PARAMNAME = snagTable<float>(L, INDEX, &PARAMNAME_size);
 else if(type == GL_BITMAP)
   std_error(L, HELP, "GL_BITMAP not supported in FUNCNAME");
 else if(type == GL_3_BYTES)
@@ -161,6 +162,67 @@ types.rawdata_table_indexed = {
   std_error(L, HELP, "Unrecognized type in FUNCNAME");]],
   type = {"int", "void *"},
 }
+
+types.table_fixed = function (typ, num)
+  typ = "GL" .. typ
+  local tok = "table_fixed_" .. typ .. "_" .. num
+  
+  if not types[tok] then
+    types[tok] = {
+      stdprocess =
+([[if(!(lua_istable(L, INDEX)))
+  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+if(lua_objlen(L, INDEX) != FIXEDLEN)
+  std_error(L, HELP, "Table size error in FUNCNAME for parameter PARAMNAME - Expected %d, got FIXEDLEN", lua_objlen(L, INDEX));
+PARAMNAME = (TYPE*)snagTable<TYPE>(L, INDEX);]]):gsub("FIXEDLEN", tostring(num)):gsub("TYPE", typ),
+      stdcleanup = [[free(PARAMNAME);]],
+      type = typ .. " *",
+    }
+  end
+  
+  return tok
+end
+
+types.table = function(typ)
+  typ = "GL" .. typ
+  local tok = "table_" .. typ
+  
+  if not types[tok] then
+    types[tok] = {
+      stdprocess =
+([[if(!(lua_istable(L, INDEX)))
+  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+PARAMNAME2 = (TYPE*)snagTable<TYPE>(L, INDEX, &PARAMNAME1);]]):gsub("TYPE", typ),
+      stdcleanup = [[free(PARAMNAME2);]],
+      type = {"int", typ .. " *"},
+    }
+  end
+  
+  return tok
+end
+
+local eo_caps = {}
+types.enum_offset = function (prefix, cap)
+  local tok = "enum_offset_" .. prefix
+  
+  if eo_caps[prefix] then assert(eo_caps[prefix] == cap) end
+  eo_caps[prefix] = cap
+  
+  if not types[tok] then
+    types[tok] = {
+      stdprocess =
+([[if(!(lua_isnumber(L, INDEX)))
+  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+PARAMNAME = lua_tonumber(L, INDEX);
+if(PARAMNAME <= 0 || PARAMNAME > GL_ENUMCAP)
+  std_error(L, HELP, "ID out of bounds in FUNCNAME for parameter PARAMNAME");
+PARAMNAME = PARAMNAME + GL_ENUMORIGIN0 - 1;]]):gsub("ENUMORIGIN", prefix):gsub("ENUMCAP", cap),
+      type = "GLenum",
+    }
+  end
+  
+  return tok
+end
 
 types.index = {
   stdprocess = 
@@ -224,51 +286,12 @@ local data
 do
   local descriptor_table = {}
   
-  for k in pairs(types) do
-    descriptor_table[k] = k
-  end
-  
-  descriptor_table.table_fixed = function (typ, num)
-    typ = "GL" .. typ
-    local tok = "table_fixed_" .. typ .. "_" .. num
-    
-    if not types[tok] then
-      types[tok] = {
-        stdprocess =
-([[if(!(lua_istable(L, INDEX)))
-  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
-if(lua_objlen(L, INDEX) != FIXEDLEN)
-  std_error(L, HELP, "Table size error in FUNCNAME for parameter PARAMNAME - Expected %d, got FIXEDLEN", lua_objlen(L, INDEX));
-PARAMNAME = (TYPE*)snagTable<TYPE>(L, INDEX);]]):gsub("FIXEDLEN", tostring(num)):gsub("TYPE", typ),
-        stdcleanup = [[free(PARAMNAME);]],
-        type = typ .. " *",
-      }
+  for k, v in pairs(types) do
+    if type(v) == "function" then
+      descriptor_table[k] = v
+    else
+      descriptor_table[k] = k
     end
-    
-    return tok
-  end
-  
-  local eo_caps = {}
-  descriptor_table.enum_offset = function (prefix, cap)
-    local tok = "enum_offset_" .. prefix
-    
-    if eo_caps[prefix] then assert(eo_caps[prefix] == cap) end
-    eo_caps[prefix] = cap
-    
-    if not types[tok] then
-      types[tok] = {
-        stdprocess =
-([[if(!(lua_isnumber(L, INDEX)))
-  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
-PARAMNAME = lua_tonumber(L, INDEX);
-if(PARAMNAME <= 0 || PARAMNAME > GL_ENUMCAP)
-  std_error(L, HELP, "ID out of bounds in FUNCNAME for parameter PARAMNAME");
-PARAMNAME = PARAMNAME + GL_ENUMORIGIN0 - 1;]]):gsub("ENUMORIGIN", prefix):gsub("ENUMCAP", cap),
-        type = "GLenum",
-      }
-    end
-    
-    return tok
   end
   
   local lf = assert(loadfile("descriptor_ogl1.lua"))
@@ -484,14 +507,35 @@ local function do_shard(dat, local_name, name)
     ln = "gl" .. name
   end
   fil:write(ln .. "(")
-  local first = true
-  for id, chunk in ipairs(paramlist) do
-    for _, name in pairs(chunk) do
+  do
+    local first = true
+    local function param(tik)
       if not first then
         fil:write(", ")
       end
-      fil:write(name)
+      fil:write(tik)
       first = false
+    end
+    
+    local parms = {}
+    for id, chunk in ipairs(paramlist) do
+      for _, name in pairs(chunk) do
+        table.insert(parms, name)
+      end
+    end
+    
+    local pos = 1
+    local parmpos = 1
+    while true do
+      if dat.insertions and dat.insertions[pos] then
+        param(dat.insertions[pos])
+      elseif parms[parmpos] then
+        param(parms[parmpos])
+        parmpos = parmpos + 1
+      else
+        break
+      end
+      pos = pos + 1
     end
   end
   fil:write(");\n\n")
