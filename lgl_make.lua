@@ -79,6 +79,7 @@ types.int = {
 PARAMNAME = lua_tonumber(L, INDEX);
 if((double)PARAMNAME != lua_tonumber(L, INDEX))
   std_error(L, HELP, "Non-integer in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));]],
+  returncode = "lua_pushnumber(L, rv);",
   type = "GLint",
 }
 types.bool = {
@@ -470,6 +471,10 @@ local function do_shard(dat, local_name, name)
   
   -- actually call the function
   fil:write("    // actually call the function\n")
+  fil:write("    ")
+  if dat.returntype then
+    fil:write(types[dat.returntype].type .. " rv = ")
+  end
   local ln
   if dat.func then
     ln = dat.func
@@ -478,7 +483,7 @@ local function do_shard(dat, local_name, name)
   else
     ln = "gl" .. name
   end
-  fil:write("    " .. ln .. "(")
+  fil:write(ln .. "(")
   local first = true
   for id, chunk in ipairs(paramlist) do
     for _, name in pairs(chunk) do
@@ -503,7 +508,7 @@ local function do_shard(dat, local_name, name)
     end
   end
 
-    -- now we do normal cleanup
+  -- now we do normal cleanup
   for id, typ in ipairs(dat.params) do
     local tinfo = types[typ]
     local param = paramlist[id]
@@ -514,7 +519,14 @@ local function do_shard(dat, local_name, name)
     end
   end
   
-  fil:write("    return 0;\n")
+  -- and now we jam things back into lua
+  if dat.returntype then
+    assert(types[dat.returntype].returncode)
+    fil:write("    " .. types[dat.returntype].returncode .. "\n");
+    fil:write("    return 1;\n")
+  else
+    fil:write("    return 0;\n")
+  end
   fil:write("  } while(false); // though actually if we get here something has gone very wrong\n\n")
 end
 

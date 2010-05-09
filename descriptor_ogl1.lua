@@ -296,7 +296,23 @@ CopyTexSubImage3D = {
     "TEXTURE_3D",
   },
 },
-
+CreateProgram = {
+  params = {},
+  returntype = program,
+},
+CreateShader = {
+  params = {enum},
+  enums = {
+    "VERTEX_SHADER FRAGMENT_SHADER",
+  },
+  returntype = shader,
+},
+CullFace = {
+  params = {enum},
+  enums = {
+    "FRONT BACK FRONT_AND_BACK",
+  }
+},
 
     
   
