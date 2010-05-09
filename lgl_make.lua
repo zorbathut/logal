@@ -96,14 +96,16 @@ types.typed_data = {
   stdprocess =
 [[if(type == GL_UNSIGNED_BYTE || type == GL_BYTE || type == GL_UNSIGNED_BYTE_3_3_2 || type == GL_UNSIGNED_BYTE_2_3_3_REV)
   PARAMNAME = snagTable<unsigned char>(L, INDEX);
-else if(type == GL_UNSIGNED_SHORT || type == GL_SHORT || type == GL_UNSIGNED_SHORT_5_6_5 || type == GL_UNSIGNED_SHORT_5_6_5_REV || type == GL_UNSIGNED_SHORT_4_4_4_4 || type == GL_UNSIGNED_SHORT_4_4_4_4_REV || type == GL_UNSIGNED_SHORT_5_5_5_1 || type == GL_UNSIGNED_SHORT_1_5_5_5_REV)
+else if(type == GL_UNSIGNED_SHORT || type == GL_SHORT || type == GL_UNSIGNED_SHORT_5_6_5 || type == GL_UNSIGNED_SHORT_5_6_5_REV || type == GL_UNSIGNED_SHORT_4_4_4_4 || type == GL_UNSIGNED_SHORT_4_4_4_4_REV || type == GL_UNSIGNED_SHORT_5_5_5_1 || type == GL_UNSIGNED_SHORT_1_5_5_5_REV || type == GL_2_BYTES)
   PARAMNAME = snagTable<short>(L, INDEX);
-else if(type == GL_UNSIGNED_INT || type == GL_INT || type == GL_UNSIGNED_INT_8_8_8_8 || type == GL_UNSIGNED_INT_8_8_8_8_REV || type == GL_UNSIGNED_INT_10_10_10_2 || type == GL_UNSIGNED_INT_2_10_10_10_REV)
+else if(type == GL_UNSIGNED_INT || type == GL_INT || type == GL_UNSIGNED_INT_8_8_8_8 || type == GL_UNSIGNED_INT_8_8_8_8_REV || type == GL_UNSIGNED_INT_10_10_10_2 || type == GL_UNSIGNED_INT_2_10_10_10_REV || type == GL_4_BYTES)
   PARAMNAME = snagTable<int>(L, INDEX);
 else if(type == GL_FLOAT)
   PARAMNAME = snagTable<float>(L, INDEX);
 else if(type == GL_BITMAP)
   std_error(L, HELP, "GL_BITMAP not supported in FUNCNAME");
+else if(type == GL_3_BYTES)
+  std_error(L, HELP, "GL_3_BYTES not supported in FUNCNAME");
 else
   std_error(L, HELP, "Unrecognized type in FUNCNAME");]],
   stdcleanup = [[free(PARAMNAME);]],
