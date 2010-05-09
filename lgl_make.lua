@@ -83,7 +83,7 @@ if((double)PARAMNAME != lua_tonumber(L, INDEX))
   returncode = "lua_pushnumber(L, rv);",
   type = "GLint",
 }
-types.bool = {
+types.boolean = {
   stdprocess = 
 [[if(!(lua_isboolean(L, INDEX)))
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");

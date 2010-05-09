@@ -144,7 +144,7 @@ Color4 = {
 },
 -- Color itself defined later on
 ColorMask = {
-  params = {bool, bool, bool, bool},
+  params = {boolean, boolean, boolean, boolean},
 },
 ColorMaterial = {
   params = {enum, enum},
@@ -354,7 +354,7 @@ DepthFunc = {
   }
 },
 DepthMask = {
-  params = {bool},
+  params = {boolean},
 },
 DepthRange = {
   params = {float, float},
@@ -419,6 +419,64 @@ DrawRangeElements = {
   }
 },
 
+EdgeFlag = {
+  params = {boolean},
+},
+--[[EdgeFlagPointer = {}]] -- some confusion as to this function's behavior, might need better overloading
+Enable = {
+  params = {enum},
+  enums = {
+    "ALPHA_TEST AUTO_NORMAL BLEND COLOR_LOGIC_OP COLOR_MATERIAL COLOR_SUM COLOR_TABLE CONVOLUTION_1D CONVOLUTION_2D CULL_FACE DEPTH_TEST DITHER FOG HISTOGRAM INDEX_LOGIC_OP LIGHTING LINE_SMOOTH LINE_STIPPLE MAP1_COLOR_4 MAP1_INDEX MAP1_NORMAL MAP1_TEXTURE_COORD_1 MAP1_TEXTURE_COORD_2 MAP1_TEXTURE_COORD_3 MAP1_TEXTURE_COORD_4 MAP1_VERTEX_3 MAP1_VERTEX_4 MAP2_COLOR_4 MAP2_INDEX MAP2_NORMAL MAP2_TEXTURE_COORD_1 MAP2_TEXTURE_COORD_2 MAP2_TEXTURE_COORD_3 MAP2_TEXTURE_COORD_4 MAP2_VERTEX_3 MAP2_VERTEX_4 MINMAX MULTISAMPLE NORMALIZE POINT_SMOOTH POINT_SPRITE POLYGON_OFFSET_FILL POLYGON_OFFSET_LINE POLYGON_OFFSET_POINT POLYGON_SMOOTH POLYGON_STIPPLE POST_COLOR_MATRIX_COLOR_TABLE POST_CONVOLUTION_COLOR_TABLE RESCALE_NORMAL SAMPLE_ALPHA_TO_COVERAGE SAMPLE_ALPHA_TO_ONE SAMPLE_COVERAGE SEPARABLE_2D SCISSOR_TEST STENCIL_TEST TEXTURE_1D TEXTURE_2D TEXTURE_3D TEXTURE_CUBE_MAP TEXTURE_GEN_Q TEXTURE_GEN_R TEXTURE_GEN_S TEXTURE_GEN_T VERTEX_PROGRAM_POINT_SIZE VERTEX_PROGRAM_TWO_SIDE" -- missing: CLIP_PLANEi LIGHTi 
+  }
+},
+EnableClientState = {
+  params = {enum},
+  enums = {
+    "COLOR_ARRAY EDGE_FLAG_ARRAY FOG_COORD_ARRAY INDEX_ARRAY NORMAL_ARRAY SECONDARY_COLOR_ARRAY TEXTURE_COORD_ARRAY VERTEX_ARRAY",
+  },
+},
+EnableVertexAttribArray = {
+  params = {int},
+},
+End = {
+  params = {},
+},
+EndList = {
+  params = {},
+},
+EndQuery = {
+  params = {enum},
+  enums = {
+    "SAMPLES_PASSED",
+  },
+},
+EvalCoord1 = {
+  func = "glEvalCoord1f",
+  params = {float},
+},
+EvalCoord2 = {
+  func = "glEvalCoord2f",
+  params = {float, float},
+},
+EvalMesh1 = {
+  params = {enum, int, int},
+  enums = {
+    "POINT LINE"
+  },
+},
+EvalMesh2 = {
+  params = {enum, int, int, int, int},
+  enums = {
+    "POINT LINE FILL"
+  },
+},
+EvalPoint1 = {
+  params = {int},
+},
+EvalPoint2 = {
+  params = {int, int},
+},
+
 PointSize = {
   params = {float},
 },
@@ -454,3 +512,6 @@ data.ConvolutionFilter = {"ConvolutionFilter1D", "ConvolutionFilter2D"}
 data.CopyConvolutionFilter = {"CopyConvolutionFilter1D", "CopyConvolutionFilter2D"}
 data.CopyTexImage = {"CopyTexImage1D", "CopyTexImage2D"}
 data.CopyTexSubImage = {"CopyTexSubImage1D", "CopyTexSubImage2D", "CopyTexSubImage3D"}
+data.EvalCoord = {"EvalCoord1", "EvalCoord2"}
+data.EvalMesh = {"EvalMesh1", "EvalMesh2"}
+data.EvalPoint = {"EvalPoint1", "EvalPoint2"}
