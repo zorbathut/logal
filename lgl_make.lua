@@ -278,6 +278,44 @@ if(PARAMNAME == (GLenum)-1)
   type = "GLenum",
 }
 
+types.localvar = function (name)
+  local tok = "localvar_" .. name
+  
+  if not types[tok] then
+    types[tok] = {
+      input_indices = 0,
+      name = name,
+      nocreate = true,
+    }
+  end
+  
+  return tok
+end
+
+
+types.output_table = function(typ, siz)
+  local tok = "output_table_" .. typ .. "__" .. siz
+  
+  if not types[tok] then
+    types[tok] = {
+      input_indices = 0,
+      stdprocess = "PARAMNAME = new " .. typ .. "[" .. siz .. "];",
+      returnpackage =
+([[lua_newtable(L);
+for(int i = 0; i < (%s); i++) {
+  lua_pushnumber(L, i + 1);
+  lua_pushnumber(L, PARAMNAME[i]);
+  lua_settable(L, -3);
+}]]):format(siz),
+      stdcleanup = "delete [] PARAMNAME;",
+      type = typ .. " *",
+      
+    }
+  end
+  
+  return tok
+end
+
 types.program = types.int
 types.shader = types.int
 types.query = types.int
@@ -396,102 +434,139 @@ print_error_message();
 ]]
 
 local function do_shard(dat, local_name, name)
--- first we check the parameter count
+  
   fil:write("  do {\n\n")
 
-  local paramincount = 0
-  local paramlist = {}
-  for id, typ in ipairs(dat.params) do
-    local typcustom = dat.names and dat.names[id]
-    local typbasic = types[typ].name
-    local types = types[typ].type
-    
-    if type(typcustom) == "string" then typcustom = {typcustom} end
-    if type(typbasic) == "string" then typbasic = {typbasic} end
-    if type(types) == "string" then types = {types} end
-    if typcustom then
-      assert(#typcustom == #types)
-    end
-    if typbasic then
-      assert(#typbasic == #types)
-    end
-    
-    paramincount = paramincount + #types
-    
-    local realnames = {}
-    for i = 1, #types do
-      local def = "param" .. id
-      if #types > 1 then
-        def = def .. "_" .. i
+  -- first we need to distill down our various inputs into something slightly more linear, with the internal information created
+  -- all the logic should be here, the other sections should just be outputting text
+  local param_input_final = 0
+  local param_list = {}
+  local conversions = {}
+  local returns = {}
+  do
+    local current_index = 1
+    for id, tid in ipairs(dat.params) do
+      local typ = types[tid]
+      assert(typ)
+      
+      conversions[id] = function(x) return x end
+      local function addsub(src, dst)
+        local cp = conversions[id]
+        conversions[id] = function(x) return cp(x):gsub(src, dst) end
       end
-      table.insert(realnames, (typcustom and typcustom[i]) or (typbasic and typbasic[i]) or def)
+      
+      addsub("\n", "\n    ")
+      addsub("FUNCNAME", "gl." .. name)
+      addsub("HELP", "help_" .. name)
+      
+      local param = {}
+      
+      param.index = current_index
+      addsub("INDEX", tostring(param.index))
+      current_index = current_index + (typ.input_indices or 1)
+      
+      -- distill variable names out
+      do
+        local typcustom = dat.names and dat.names[id]
+        local typbasic = typ.name
+        local types = typ.type
+        
+        if type(typcustom) == "string" then typcustom = {typcustom} end
+        if type(typbasic) == "string" then typbasic = {typbasic} end
+        if type(types) == "string" then types = {types} end
+        if not types then
+          assert(typcustom or typbasic)
+          local len = typcustom and #typcustom or #typbasic
+          types = {}
+          for i = 1, len do
+            table.insert(types, "")
+          end
+        end
+        
+        if typcustom then
+          assert(#typcustom == #types)
+        end
+        if typbasic then
+          assert(#typbasic == #types)
+        end
+        
+        local realnames = {}
+        for i = 1, #types do
+          local def = "param" .. id
+          if #types > 1 then
+            def = def .. "_" .. i
+          end
+          table.insert(realnames, (typcustom and typcustom[i]) or (typbasic and typbasic[i]) or def)
+          
+          addsub("PARAMNAME" .. i, realnames[i])
+          addsub("TYPE" .. i, types[i])
+        end
+        
+        if #types == 1 then
+          addsub("PARAMNAME", realnames[1])
+          addsub("TYPE", types[1])
+        end
+        
+        param.names = realnames
+      end
+      
+      -- get typing standardized
+      if not typ.nocreate then  -- if we're nocreate, we don't care about typing
+        param.type = typ.type
+        if type(param.type) ~= "table" then
+          param.type = {param.type}
+        end
+        
+        assert(#param.type == #param.names)
+      end
+      
+      param.stdprocess = typ.stdprocess
+      param.stdcleanup = typ.stdcleanup
+      param.nocreate = typ.nocreate
+      
+      table.insert(param_list, param)
+      
+      if typ.returnpackage then
+        table.insert(returns, {index = id, text = typ.returnpackage})
+      end
     end
-    
-    table.insert(paramlist, realnames)
+    param_input_final = current_index
   end
   
+  -- then we check the parameter count
   fil:write("    // first we check the parameter count\n") -- :D
-  fil:write("    if(lua_gettop(L) != " .. paramincount .. ") {\n")
+  fil:write("    if(lua_gettop(L) != " .. param_input_final .. ") {\n")
   fil:write("      break;\n")
   fil:write("    }\n\n")
-
-  -- hee
-  local convert = {}
-  local function addsub(param, src, dst)
-    local cp = convert[param]
-    convert[param] = function(x) return cp(x):gsub(src, dst) end
-  end
-  for i = 1, #dat.params do
-    convert[i] = function(x) return x end
-    
-    addsub(i, "\n", "\n    ")
-    addsub(i, "FUNCNAME", "gl." .. name)
-    addsub(i, "HELP", "help_" .. name)
-  end
   
   -- now we do parameters
-  for id, typ in ipairs(dat.params) do
-    addsub(id, "INDEX", tostring(id))
-    
-    local tinfo = types[typ]
-    if tinfo.custom then
-      assert(dat.custom and dat.custom[id])
-    end
-    assert(tinfo)
-    fil:write("    // extract parameter " .. id .. "\n")
+  for id, typ in ipairs(param_list) do
+   fil:write("    // extract parameter " .. id .. "\n")
     
     -- types
-    do
-      local tinf = tinfo.type
-      if type(tinf) == "string" then tinf = {tinf} end
-      
-      for pid = 1, #tinf do
-        addsub(id, "PARAMNAME" .. pid, paramlist[id][pid])
-      
-        fil:write("    " .. tinf[pid] .. " " .. paramlist[id][pid] .. ";\n")
-      end
-      
-      if #tinf == 1 then
-        addsub(id, "PARAMNAME", paramlist[id][1])
+    if not typ.nocreate then
+      for pid = 1, #typ.names do
+        fil:write("    " .. typ.type[pid] .. " " .. typ.names[pid] .. ";\n")
       end
     end
     
-    if tinfo.stdprocess then
-      fil:write("    " .. convert[id](tinfo.stdprocess) .. "\n\n")
+    if typ.stdprocess then
+      fil:write("    " .. conversions[id](typ.stdprocess) .. "\n\n")
     end
   end
   
   -- now we do custom parameter init
+  --[[ -- don't really have any of this right now
   if dat.custom then
     for id, typ in ipairs(dat.params) do
       local cst = dat.custom[id]
       if cst and cst.parse then
         local param = paramlist[id]
         fil:write("    // custom init code for parameter " .. id .. "\n")
-        fil:write("    " .. convert[id](cst.parse) .. "\n\n")
+        fil:write("    " .. conversions[id](cst.parse) .. "\n\n")
       end
     end
-  end
+  end]]
   
   -- actually call the function
   fil:write("    // actually call the function\n")
@@ -519,59 +594,54 @@ local function do_shard(dat, local_name, name)
     end
     
     local parms = {}
-    for id, chunk in ipairs(paramlist) do
-      for _, name in pairs(chunk) do
-        table.insert(parms, name)
+    for id, chunk in ipairs(param_list) do
+      for _, name in pairs(chunk.names) do
+        param(name)
       end
-    end
-    
-    local pos = 1
-    local parmpos = 1
-    while true do
-      if dat.insertions and dat.insertions[pos] then
-        param(dat.insertions[pos])
-      elseif parms[parmpos] then
-        param(parms[parmpos])
-        parmpos = parmpos + 1
-      else
-        break
-      end
-      pos = pos + 1
     end
   end
   fil:write(");\n\n")
   
+  local returnslots = 0
+  
+  -- jam return value back in first
+  if dat.returntype then
+    assert(types[dat.returntype].returncode)
+    fil:write("    // standard return value\n")
+    fil:write("    " .. types[dat.returntype].returncode .. "\n\n");
+    returnslots = returnslots + 1
+  end
+  
+  -- now we do any custom returns we might have
+  for _, v in ipairs(returns) do
+    fil:write("    // extra return value\n")
+    fil:write("    " .. conversions[v.index](v.text) .. "\n\n");
+    returnslots = returnslots + 1
+  end
+  
   -- now we do custom parameter cleanup
+  --[[  -- again, bzzt
   if dat.custom then
     for id, typ in ipairs(dat.params) do
       local cst = dat.custom[id]
       if cst and cst.cleanup then
         local param = paramlist[id]
         fil:write("    // custom cleanup code for parameter " .. id .. "\n")
-        fil:write("    " .. convert[id](cst.cleanup) .. "\n\n")
+        fil:write("    " .. conversions[id](cst.cleanup) .. "\n\n")
       end
     end
-  end
+  end]]
 
   -- now we do normal cleanup
-  for id, typ in ipairs(dat.params) do
-    local tinfo = types[typ]
-    local param = paramlist[id]
-    assert(tinfo)
-    if tinfo.stdcleanup then
+  for id, typ in ipairs(param_list) do
+    if typ.stdcleanup then
       fil:write("    // cleanup parameter " .. id .. "\n")
-      fil:write("    " .. convert[id](tinfo.stdcleanup) .. "\n\n")
+      fil:write("    " .. conversions[id](typ.stdcleanup) .. "\n\n")
     end
   end
   
-  -- and now we jam things back into lua
-  if dat.returntype then
-    assert(types[dat.returntype].returncode)
-    fil:write("    " .. types[dat.returntype].returncode .. "\n");
-    fil:write("    return 1;\n")
-  else
-    fil:write("    return 0;\n")
-  end
+  -- now we really return
+  fil:write("    return " .. returnslots .. ";\n")
   fil:write("  } while(false); // though actually if we get here something has gone very wrong\n\n")
 end
 

@@ -391,13 +391,10 @@ DrawBuffer = {
 },
 --[[DrawBuffers = {},]] -- disabled because we need some kind of table(enum) that also supports GL_AUXi and friends
 DrawElements = {
-  params = {enum, typed_data_type, typed_data},
+  params = {enum, localvar("param4_size"), typed_data_type, typed_data},
   enums = {
     "POINTS LINE_STRIP LINE_LOOP LINES TRIANGLE_STRIP TRIANGLE_FAN TRIANGLES QUAD_STRIP QUADS POLYGON",
   },
-  insertions = {
-    [2] = "param3_size",
-  }
 },
 DrawPixels = {
   params = {int, int, enum, typed_data_type, typed_data},
@@ -500,6 +497,9 @@ Frustum = {
   params = {float, float, float, float, float, float},
 },
 
+GenBuffers = {
+  params = {int, output_table("GLuint", "param1")},
+},
 
 PointSize = {
   params = {float},
