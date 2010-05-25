@@ -500,6 +500,39 @@ Frustum = {
 GenBuffers = {
   params = {int, output_table("GLuint", "param1")},
 },
+GenLists = {
+  params = {int},
+  returntype = int,
+},
+GenQueries = {
+  params = {int, output_table("GLuint", "param1")},
+},
+GenTextures = {
+  params = {int, output_table("GLuint", "param1")},
+},
+--[[Get = {},]] -- arglbargl
+GetActiveAttrib = {
+  params = {program, int, output_string_size("glGetProgramiv(param1, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &PARAMNAME);"), output_int, output_enum, output_string_data},
+  enums = {
+    nil,
+    nil,
+    nil,
+    nil,
+    "FLOAT FLOAT_VEC2 FLOAT_VEC3 FLOAT_VEC4 FLOAT_MAT2 FLOAT_MAT3 FLOAT_MAT4 FLOAT_MAT2x3 FLOAT_MAT2x4 FLOAT_MAT3x2 FLOAT_MAT3x4 FLOAT_MAT4x2 FLOAT_MAT4x3",
+    nil
+  }
+},
+GetActiveUniform = {
+  params = {program, int, output_string_size("glGetProgramiv(param1, GL_ACTIVE_UNIFORM_MAX_LENGTH, &PARAMNAME);"), output_int, output_enum, output_string_data},
+  enums = {
+    nil,
+    nil,
+    nil,
+    nil,
+    "FLOAT FLOAT_VEC2 FLOAT_VEC3 FLOAT_VEC4 INT INT_VEC2 INT_VEC3 INT_VEC4 BOOL BOOL_VEC2 BOOL_VEC3 BOOL_VEC4 FLOAT_MAT2 FLOAT_MAT3 FLOAT_MAT4 FLOAT_MAT2x3 FLOAT_MAT2x4 FLOAT_MAT3x2 FLOAT_MAT3x4 FLOAT_MAT4x2 FLOAT_MAT4x3 SAMPLER_1D SAMPLER_2D SAMPLER_3D SAMPLER_CUBE SAMPLER_1D_SHADOW SAMPLER_2D_SHADOW",
+    nil
+  }
+},
 
 PointSize = {
   params = {float},

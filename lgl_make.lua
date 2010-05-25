@@ -316,6 +316,44 @@ for(int i = 0; i < (%s); i++) {
   return tok
 end
 
+types.output_string_size = function(size_det)
+  local tok = "output_string_" .. size_det
+  
+  if not types[tok] then
+    types[tok] = {
+      input_indices = 0,
+      stdprocess = size_det:gsub("PARAMNAME", "PARAMNAME1") .. [[
+PARAMNAME2 = NULL;]],
+      param = "PARAMNAME1, &PARAMNAME2",
+      type = {"int", "int"},
+      name = {"string_length_maximum", "string_length_real"},
+    }
+  end
+  
+  return tok
+end
+types.output_string_data = {
+  input_indices = 0,
+  stdprocess = "PARAMNAME = new char[string_length_maximum];",
+  returnpackage = "lua_pushlstring(L, PARAMNAME, string_length_real);",
+  stdcleanup = "delete [] PARAMNAME;",
+  type = "char *",
+}
+
+types.output_int = {
+  input_indices = 0,
+  returnpackage = "lua_pushnumber(L, PARAMNAME);",
+  param = "&PARAMNAME",
+  type = "GLint",
+}
+types.output_enum = {
+  input_indices = 0,
+  returnpackage = "lua_pushstring(L, enum_lookup(PARAMNAME));",
+  param = "&PARAMNAME",
+  type = "GLenum",
+}
+  
+
 types.program = types.int
 types.shader = types.int
 types.query = types.int
@@ -393,6 +431,14 @@ static GLenum enum_retrieve(const string &text) {
   if(itr != enum_map.end())
     return itr->second;
   return -1;
+}
+
+static const char enum_error[] = "LGL_ENUM_ERROR";
+static const char *enum_lookup(GLenum enu) {
+  map<GLenum, string>::iterator itr = enum_map_reverse.find(enu);
+  if(itr != enum_map_reverse.end())
+    return itr->second.c_str();
+  return enum_error;
 }
 
 static GLenum enum_bitmask_retrieve(const string &text) {
@@ -523,6 +569,7 @@ local function do_shard(dat, local_name, name)
       param.stdprocess = typ.stdprocess
       param.stdcleanup = typ.stdcleanup
       param.nocreate = typ.nocreate
+      param.param = typ.param
       
       table.insert(param_list, param)
       
@@ -595,8 +642,12 @@ local function do_shard(dat, local_name, name)
     
     local parms = {}
     for id, chunk in ipairs(param_list) do
-      for _, name in pairs(chunk.names) do
-        param(name)
+      if chunk.param then
+        param(conversions[id](chunk.param))
+      else
+        for _, name in pairs(chunk.names) do
+          param(name)
+        end
       end
     end
   end
