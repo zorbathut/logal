@@ -71,6 +71,7 @@ types.enum = {
 PARAMNAME = enum_retrieve(lua_tostring(L, INDEX));
 if(PARAMNAME == (GLenum)-1)
   std_error(L, HELP, "Unknown enum in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));]],
+  returncode = "lua_pushstring(L, enum_lookup(rv));",
   type = "GLenum",
 }
 types.int = {
@@ -316,8 +317,8 @@ for(int i = 0; i < (%s); i++) {
   return tok
 end
 
-types.output_string_size = function(size_det)
-  local tok = "output_string_" .. size_det
+types.output_items_size = function(size_det)
+  local tok = "output_items_size_" .. size_det
   
   if not types[tok] then
     types[tok] = {
@@ -326,16 +327,53 @@ types.output_string_size = function(size_det)
 PARAMNAME2 = NULL;]],
       param = "PARAMNAME1, &PARAMNAME2",
       type = {"int", "int"},
-      name = {"string_length_maximum", "string_length_real"},
+      name = {"items_length_maximum", "items_length_real"},
     }
   end
   
   return tok
 end
-types.output_string_data = {
+types.output_items_data = function(typ)
+  local tok = "output_items_data_" .. typ
+  
+  if not types[tok] then
+    types[tok] = {
+      input_indices = 0,
+      stdprocess = "PARAMNAME = new " .. typ .. "[items_length_maximum];",
+      returnpackage = 
+[[lua_newtable(L);
+for(int i = 0; i < items_length_real; i++) {
+  lua_pushnumber(L, i + 1);
+  lua_pushnumber(L, PARAMNAME[i]);
+  lua_settable(L, -3);
+}]],
+      stdcleanup = "delete [] PARAMNAME;",
+      type = typ .. " *",
+    }
+  end
+  
+  return tok
+end
+
+types.output_item = function(typ)
+  local tok = "output_item_" .. typ
+  
+  if not types[tok] then
+    types[tok] = {
+      input_indices = 0,
+      returnpackage = "lua_pushnumber(L, PARAMNAME);",
+      param = "&PARAMNAME",
+      type = typ,
+    }
+  end
+  
+  return tok
+end
+
+types.output_items_data_string = {
   input_indices = 0,
-  stdprocess = "PARAMNAME = new char[string_length_maximum];",
-  returnpackage = "lua_pushlstring(L, PARAMNAME, string_length_real);",
+  stdprocess = "PARAMNAME = new char[items_length_maximum];",
+  returnpackage = "lua_pushlstring(L, PARAMNAME, items_length_real);",
   stdcleanup = "delete [] PARAMNAME;",
   type = "char *",
 }
@@ -386,6 +424,12 @@ local function pull_enums(v)
         for enu in v.enums[id]:gmatch("([^%s]+)") do
           enum_list[enu] = true
         end
+      end
+    end
+    
+    if v.enums.returntype then
+      for enu in v.enums.returntype:gmatch("([^%s]+)") do
+        enum_list[enu] = true
       end
     end
   end

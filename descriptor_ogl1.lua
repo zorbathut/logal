@@ -512,7 +512,7 @@ GenTextures = {
 },
 --[[Get = {},]] -- arglbargl
 GetActiveAttrib = {
-  params = {program, int, output_string_size("glGetProgramiv(param1, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &PARAMNAME);"), output_int, output_enum, output_string_data},
+  params = {program, int, output_items_size("glGetProgramiv(param1, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &PARAMNAME);"), output_int, output_enum, output_items_data_string},
   enums = {
     nil,
     nil,
@@ -523,7 +523,7 @@ GetActiveAttrib = {
   }
 },
 GetActiveUniform = {
-  params = {program, int, output_string_size("glGetProgramiv(param1, GL_ACTIVE_UNIFORM_MAX_LENGTH, &PARAMNAME);"), output_int, output_enum, output_string_data},
+  params = {program, int, output_items_size("glGetProgramiv(param1, GL_ACTIVE_UNIFORM_MAX_LENGTH, &PARAMNAME);"), output_int, output_enum, output_items_data_string},
   enums = {
     nil,
     nil,
@@ -533,6 +533,47 @@ GetActiveUniform = {
     nil
   }
 },
+GetAttachedShaders = {
+  params = {program, output_items_size("glGetProgramiv(param1, GL_ATTACHED_SHADERS, &PARAMNAME);"), output_items_data("GLuint")}
+},
+GetAttribLocation = {
+  params = {program, string},
+  returntype = int,
+},
+GetBufferParameter = {
+  func = "glGetBufferParameteriv",
+  params = {enum, enum, output_item("GLint")},
+  enums = {
+    "ARRAY_BUFFER ELEMENT_ARRAY_BUFFER PIXEL_PACK_BUFFER PIXEL_UNPACK_BUFFER",
+    "BUFFER_ACCESS BUFFER_MAPPED BUFFER_SIZE BUFFER_USAGE",
+    nil,
+  }
+},
+--[[GetBufferPointer = {},]] -- hmm
+--[[GetBufferSubData = {},]] -- hmm
+GetClipPlane = {
+  params = {enum_offset("CLIP_PLANE", "MAX_CLIP_PLANES"), output_table("GLdouble", 4)},
+},
+--[[GetColorTable = {},]] -- highly unclear what the size should be
+GetColorTableParameter = {
+  func = "glGetColorTableParameterfv",
+  params = {enum, enum, output_item("GLfloat")},
+  enums = {
+    "COLOR_TABLE POST_CONVOLUTION_COLOR_TABLE POST_COLOR_MATRIX_COLOR_TABLE PROXY_COLOR_TABLE PROXY_POST_CONVOLUTION_COLOR_TABLE PROXY_POST_COLOR_MATRIX_COLOR_TABLE",
+    "COLOR_TABLE_BIAS COLOR_TABLE_SCALE COLOR_TABLE_FORMAT COLOR_TABLE_WIDTH COLOR_TABLE_RED_SIZE COLOR_TABLE_GREEN_SIZE COLOR_TABLE_BLUE_SIZE COLOR_TABLE_ALPHA_SIZE COLOR_TABLE_LUMINANCE_SIZE COLOR_TABLE_INTENSITY_SIZE",
+    nil,
+  }
+},
+--[[GetConvolutionFilter = {},]] -- highly unclear what the size should be
+--[[GetConvolutionParameter = {},]] -- I think we need more advanced overloading for this one
+GetError = {
+  params = {},
+  returntype = enum,
+  enums = {
+    returntype = "NO_ERROR INVALID_ENUM INVALID_VALUE INVALID_OPERATION STACK_OVERFLOW STACK_UNDERFLOW OUT_OF_MEMORY TABLE_TOO_LARGE",
+  }
+},
+
 
 PointSize = {
   params = {float},
