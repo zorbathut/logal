@@ -766,6 +766,57 @@ LogicOp = {
   },
 },
 
+--[[Map1 = {},]]
+--[[Map2 = {},]] -- complex
+--[[MapBuffer = {},]] -- also complex
+MapGrid1 = {
+  func = "glMapGrid1f",
+  params = {int, float, float},
+},
+MapGrid2 = {
+  func = "glMapGrid2f",
+  params = {int, float, float, int, float, float},
+},
+--[[Material = {},]] -- again, complex
+MatrixMode = {
+  params = {enum},
+  enums = {
+    "MODELVIEW PROJECTION TEXTURE COLOR",
+  },
+},
+Minmax = {
+  params = {enum, enum, boolean},
+  enums = {
+    "MINMAX",
+    "ALPHA ALPHA4 ALPHA8 ALPHA12 ALPHA16 LUMINANCE LUMINANCE4 LUMINANCE8 LUMINANCE12 LUMINANCE16 LUMINANCE_ALPHA LUMINANCE4_ALPHA4 LUMINANCE6_ALPHA2 LUMINANCE8_ALPHA8 LUMINANCE12_ALPHA4 LUMINANCE12_ALPHA12 LUMINANCE16_ALPHA16 R3_G3_B2 RGB RGB4 RGB5 RGB8 RGB10 RGB12 RGB16 RGBA RGBA2 RGBA4 RGB5_A1 RGBA8 RGB10_A2 RGBA12 RGBA16",
+  }
+},
+MultMatrix = {
+  func = "glMultMatrixf",
+  params = {table_fixed(float, 16)},
+},
+MultTransposeMatrix = {
+  func = "glMultTransposeMatrixf",
+  params = {table_fixed(float, 16)},
+},
+--[[MultiDrawArrays = {},]] -- a bit difficult
+--[[MultiDrawElements = {},]] -- a bit difficult
+MultiTexCoord1 = {
+  func = "glMultiTexCoord1f",
+  params = {enum_offset("TEXTURE", "MAX_TEXTURE_COORDS"), float},
+},
+MultiTexCoord2 = {
+  func = "glMultiTexCoord2f",
+  params = {enum_offset("TEXTURE", "MAX_TEXTURE_COORDS"), float, float},
+},
+MultiTexCoord3 = {
+  func = "glMultiTexCoord3f",
+  params = {enum_offset("TEXTURE", "MAX_TEXTURE_COORDS"), float, float, float},
+},
+MultiTexCoord4 = {
+  func = "glMultiTexCoord4f",
+  params = {enum_offset("TEXTURE", "MAX_TEXTURE_COORDS"), float, float, float, float},
+},
 
 PointSize = {
   params = {float},
@@ -805,3 +856,6 @@ data.CopyTexSubImage = {"CopyTexSubImage1D", "CopyTexSubImage2D", "CopyTexSubIma
 data.EvalCoord = {"EvalCoord1", "EvalCoord2"}
 data.EvalMesh = {"EvalMesh1", "EvalMesh2"}
 data.EvalPoint = {"EvalPoint1", "EvalPoint2"}
+data.MapGrid = {"MapGrid1", "MapGrid2"}
+data.MultiTexCoord = {"MultiTexCoord1", "MultiTexCoord2", "MultiTexCoord3", "MultiTexCoord4"}
+
