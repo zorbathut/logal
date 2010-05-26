@@ -838,6 +838,37 @@ Ortho = {
   params = {float, float, float, float, float, float},
 },
 
+PassThrough = {
+  params = {float},
+},
+PixelMap = {
+  func = "glPixelMapfv",
+  params = {enum, table(float)},
+  enums = {
+    "PIXEL_MAP_I_TO_I PIXEL_MAP_S_TO_S PIXEL_MAP_I_TO_R PIXEL_MAP_I_TO_G PIXEL_MAP_I_TO_B PIXEL_MAP_I_TO_A PIXEL_MAP_R_TO_R PIXEL_MAP_G_TO_G PIXEL_MAP_B_TO_B PIXEL_MAP_A_TO_A",
+    nil,
+  },
+},
+PixelStore = {
+  func = "glPixelStoref",
+  params = {enum, float},
+  enums = {
+    "PACK_SWAP_BYTES PACK_LSB_FIRST PACK_ROW_LENGTH PACK_IMAGE_HEIGHT PACK_SKIP_PIXELS PACK_SKIP_ROWS PACK_SKIP_IMAGES PACK_ALIGNMENT UNPACK_SWAP_BYTES UNPACK_LSB_FIRST UNPACK_ROW_LENGTH UNPACK_IMAGE_HEIGHT UNPACK_SKIP_PIXELS UNPACK_SKIP_ROWS UNPACK_SKIP_IMAGES UNPACK_ALIGNMENT",
+    nil,
+  },
+},
+PixelTransfer = {
+  func = "glPixelTransferf",
+  params = {enum, int},
+  enums = {
+    "MAP_COLOR MAP_STENCIL INDEX_SHIFT INDEX_OFFSET RED_SCALE RED_BIAS GREEN_SCALE GREEN_BIAS BLUE_SCALE BLUE_BIAS ALPHA_SCALE ALPHA_BIAS DEPTH_SCALE DEPTH_BIAS POST_COLOR_MATRIX_RED_SCALE POST_COLOR_MATRIX_GREEN_SCALE POST_COLOR_MATRIX_BLUE_SCALE POST_COLOR_MATRIX_ALPHA_SCALE POST_COLOR_MATRIX_RED_BIAS POST_COLOR_MATRIX_GREEN_BIAS POST_COLOR_MATRIX_BLUE_BIAS POST_COLOR_MATRIX_ALPHA_BIAS POST_CONVOLUTION_RED_SCALE POST_CONVOLUTION_GREEN_SCALE POST_CONVOLUTION_BLUE_SCALE POST_CONVOLUTION_ALPHA_SCALE POST_CONVOLUTION_RED_BIAS POST_CONVOLUTION_GREEN_BIAS POST_CONVOLUTION_BLUE_BIAS POST_CONVOLUTION_ALPHA_BIAS",
+    nil,
+  },
+},
+PixelZoom = {
+  params = {float, float},
+},
+--[[PointParameter = {},]] -- overloading
 PointSize = {
   params = {float},
 },
@@ -847,6 +878,43 @@ PolygonMode = {
     "FRONT BACK FRONT_AND_BACK",
     "POINT LINE FILL",
   }
+},
+PolygonOffset = {
+  params = {float, float},
+},
+PolygonStipple = {
+  params = {table_fixed("ubyte", 32*32 / 8)},
+},
+PopAttrib = {
+  params = {},
+},
+PopClientAttrib = {
+  params = {},
+},
+PopMatrix = {
+  params = {},
+},
+PopName = {
+  params = {},
+},
+--[[PrioritizeTextures = {},]] -- ugh
+PushAttrib = {
+  params = {bitmask},
+  enums = {
+    "ALL_ATTRIB_BITS ACCUM_BUFFER_BIT COLOR_BUFFER_BIT CURRENT_BIT DEPTH_BUFFER_BIT ENABLE_BIT EVAL_BIT FOG_BIT HINT_BIT LIGHTING_BIT LINE_BIT LIST_BIT MULTISAMPLE_BIT PIXEL_MODE_BIT POINT_BIT POLYGON_BIT POLYGON_STIPPLE_BIT SCISSOR_BIT STENCIL_BUFFER_BIT TEXTURE_BIT TRANSFORM_BIT VIEWPORT_BIT",
+  },
+},
+PushClientAttrib = {
+  params = {bitmask},
+  enums = {
+    "CLIENT_ALL_ATTRIB_BITS CLIENT_PIXEL_STORE_BIT CLIENT_VERTEX_ARRAY_BIT",
+  },
+},
+PushMatrix = {
+  params = {},
+},
+PushName = {
+  params = {int},
 },
 
 TexImage = {
