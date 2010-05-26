@@ -597,6 +597,68 @@ GetProgram = {  -- more overloading would probably help this as well
 GetProgramInfoLog = {
   params = {program, output_items_size("glGetProgramiv(param1, GL_INFO_LOG_LENGTH, &PARAMNAME);"), output_items_data_string},
 },
+GetQueryObject = {
+  func = "glGetQueryObjectiv",
+  params = {query, enum, output_item("GLint")},
+  enums = {
+    nil,
+    "QUERY_RESULT QUERY_RESULT_AVAILABLE",
+    nil,
+  },
+},
+GetQuery = {
+  func = "glGetQueryiv",
+  params = {enum, enum, output_item("GLint")},
+  enums = {
+    "SAMPLES_PASSED",
+    "CURRENT_QUERY QUERY_COUNTER_BITS",
+    nil,
+  }
+},
+--[[GetSeparableFilter = {},]] -- rargh
+GetShader = {
+  func = "glGetShaderiv",
+  params = {shader, enum, output_item("GLint")},
+  enums = {
+    nil,
+    "SHADER_TYPE DELETE_STATUS COMPILE_STATUS INFO_LOG_LENGTH SHADER_SOURCE_LENGTH",
+    nil,
+  }
+},
+GetShaderInfoLog = {
+  params = {shader, output_items_size("glGetShaderiv(param1, GL_INFO_LOG_LENGTH, &PARAMNAME);"), output_items_data_string},
+},
+GetShaderSource = {
+  params = {shader, output_items_size("glGetShaderiv(param1, GL_SHADER_SOURCE_LENGTH, &PARAMNAME);"), output_items_data_string},
+},
+GetString = {
+  params = {enum},
+  enums = {
+    "VENDOR RENDERER VERSION SHADING_LANGUAGE_VERSION EXTENSIONS",
+  },
+  returntype = string_ubyte,
+},
+--[[GetTexEnv = {},]] -- overloading
+--[[GetTexGen = {},]] -- overloading
+--[[GetTexImage = {},]] -- this is rather complicated
+GetTexLevelParameter = {
+  func = "glGetTexLevelParameterfv",
+  params = {enum, int, enum, output_item("GLfloat")},
+  enums = {
+    "TEXTURE_1D TEXTURE_2D TEXTURE_3D PROXY_TEXTURE_1D PROXY_TEXTURE_2D PROXY_TEXTURE_3D TEXTURE_CUBE_MAP_POSITIVE_X TEXTURE_CUBE_MAP_NEGATIVE_X TEXTURE_CUBE_MAP_POSITIVE_Y TEXTURE_CUBE_MAP_NEGATIVE_Y TEXTURE_CUBE_MAP_POSITIVE_Z TEXTURE_CUBE_MAP_NEGATIVE_Z PROXY_TEXTURE_CUBE_MAP",
+    nil,
+    "TEXTURE_WIDTH TEXTURE_HEIGHT TEXTURE_DEPTH TEXTURE_INTERNAL_FORMAT TEXTURE_BORDER TEXTURE_RED_SIZE TEXTURE_GREEN_SIZE TEXTURE_BLUE_SIZE TEXTURE_ALPHA_SIZE TEXTURE_LUMINANCE_SIZE TEXTURE_INTENSITY_SIZE TEXTURE_DEPTH_SIZE TEXTURE_COMPRESSED TEXTURE_COMPRESSED_IMAGE_SIZE",
+  }
+},
+--[[GetTexParameter = {},]] -- overloading
+--[[GetUniform = {},]] -- arrrgh
+GetUniformLocation = {
+  params = {program, string},
+  returntype = int,
+},
+--[[GetVertexAttrib = {},]] -- overloading
+--[[GetVertexAttribPointer = {},]] -- wat
+
 
 PointSize = {
   params = {float},

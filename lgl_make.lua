@@ -269,6 +269,10 @@ types.string = {
 PARAMNAME = (GLchar*)lua_tostring(L, INDEX);]],
   type = "GLchar *",
 }
+types.string_ubyte = {
+  returncode = "lua_pushstring(L, (const char*)rv);",
+  type = "const GLubyte *",
+}
 types.bitmask = {
   stdprocess =
 [[if(!(lua_isstring(L, INDEX)))
