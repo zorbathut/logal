@@ -731,6 +731,41 @@ IsTexture = {
   returntype = boolean,
 },
 
+--[[Light = {},]] -- needs better overloading
+--[[LightModel = {},]] -- needs better overloading
+LineStipple = {
+  params = {int, int},
+},
+LineWidth = {
+  params = {float},
+},
+LinkProgram = {
+  params = {program},
+},
+ListBase = {
+  params = {int},
+},
+LoadIdentity = {
+  params = {},
+},
+LoadMatrix = {
+  func = "glLoadMatrixf",
+  params = {table_fixed(float, 16)},
+},
+LoadName = {
+  params = {int},
+},
+LoadTranspose = {
+  func = "glLoadTransposeMatrixf",
+  params = {table_fixed(float, 16)},
+},
+LogicOp = {
+  params = {enum},
+  enums = {
+    "CLEAR SET COPY COPY_INVERTED NOOP INVERT AND NAND OR NOR XOR EQUIV AND_REVERSE AND_INVERTED OR_REVERSE OR_INVERTED",
+  },
+},
+
 
 PointSize = {
   params = {float},
