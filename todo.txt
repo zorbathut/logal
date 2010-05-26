@@ -1,1 +1,2 @@
 * client-side state, especially glColorPointer, EnableClientState
+  * GetPointerv at least seems to summarize all this stuff

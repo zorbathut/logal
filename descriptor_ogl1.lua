@@ -573,7 +573,30 @@ GetError = {
     returntype = "NO_ERROR INVALID_ENUM INVALID_VALUE INVALID_OPERATION STACK_OVERFLOW STACK_UNDERFLOW OUT_OF_MEMORY TABLE_TOO_LARGE",
   }
 },
-
+--[[GetHistogram = {},]] -- highly unclear what the size should be
+--[[GetHistogramParameter = {},]] -- I think we need more advanced overloading for this one
+--[[GetLight = {},]] -- I think we need more advanced overloading for this one
+--[[GetMap = {},]] -- highly unclear what the size should be
+--[[GetMaterial = {},]] -- I think we need more advanced overloading for this one
+--[[GetMinmax = {},]] -- highly unclear what the size should be
+--[[GetMinmaxParameter = {},]] -- I think we need more advanced overloading for this one
+--[[GetPixelMap = {},]] -- highly unclear what the size should be
+--[[GetPointer = {},]] -- I don't even know how to provide this
+GetPolygonStipple = {
+  params = {output_table("GLubyte", 32*32 / 8)},  -- hope this size is right
+},
+GetProgram = {  -- more overloading would probably help this as well
+  func = "glGetProgramiv",
+  params = {program, enum, output_item("GLint")},
+  enums = {
+    nil,
+    "DELETE_STATUS LINK_STATUS VALIDATE_STATUS INFO_LOG_LENGTH ATTACHED_SHADERS ACTIVE_ATTRIBUTES ACTIVE_ATTRIBUTE_MAX_LENGTH ACTIVE_UNIFORMS ACTIVE_UNIFORM_MAX_LENGTH",
+    nil,
+  }
+},
+GetProgramInfoLog = {
+  params = {program, output_items_size("glGetProgramiv(param1, GL_INFO_LOG_LENGTH, &PARAMNAME);"), output_items_data_string},
+},
 
 PointSize = {
   params = {float},
