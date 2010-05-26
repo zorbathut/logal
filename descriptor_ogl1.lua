@@ -818,6 +818,26 @@ MultiTexCoord4 = {
   params = {enum_offset("TEXTURE", "MAX_TEXTURE_COORDS"), float, float, float, float},
 },
 
+NewList = {
+  params = {list, enum},
+  enums = {
+    nil,
+    "COMPILE COMPILE_AND_EXECUTE",
+  },
+},
+EndList = {
+  params = {},
+},
+Normal = {
+  func = "glNormal3f",
+  params = {float, float, float},
+},
+--[[NormalPointer = {},]] -- hurgh
+
+Ortho = {
+  params = {float, float, float, float, float, float},
+},
+
 PointSize = {
   params = {float},
 },
