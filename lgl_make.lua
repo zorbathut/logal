@@ -89,6 +89,7 @@ types.boolean = {
 [[if(!(lua_isboolean(L, INDEX)))
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
 PARAMNAME = lua_toboolean(L, INDEX);]],
+  returncode = "lua_pushboolean(L, rv);",
   type = "GLboolean",
 }
 
@@ -400,6 +401,8 @@ types.program = types.int
 types.shader = types.int
 types.query = types.int
 types.list = types.int
+types.texture = types.int
+types.buffer = types.int
 
 local data
 do
@@ -705,7 +708,7 @@ local function do_shard(dat, local_name, name)
   
   -- jam return value back in first
   if dat.returntype then
-    assert(types[dat.returntype].returncode)
+    assert(types[dat.returntype].returncode, "No returncode in " .. dat.returntype)
     fil:write("    // standard return value\n")
     fil:write("    " .. types[dat.returntype].returncode .. "\n\n");
     returnslots = returnslots + 1

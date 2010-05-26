@@ -56,6 +56,20 @@ BeginQuery = {
 BindAttribLocation = {
   params = {program, index, string},
 },
+BindBuffer = {
+  params = {enum, buffer},
+  enums = {
+    "ARRAY_BUFFER ELEMENT_ARRAY_BUFFER PIXEL_PACK_BUFFER PIXEL_UNPACK_BUFFER",
+    nil,
+  }
+},
+BindTexture = {
+  params = {enum, texture},
+  enums = {
+    "TEXTURE_1D TEXTURE_2D TEXTURE_3D TEXTURE_CUBE_MAP",
+    nil,
+  }
+},
 --[[Bitmap = {},]]
 BlendColor = {
   params = {float, float, float, float},
@@ -153,9 +167,9 @@ ColorMaterial = {
     "EMISSION AMBIENT DIFFUSE SPECULAR AMBIENT_AND_DIFFUSE",
   }
 },
-ColorPointer = {
+--[[ColorPointer = {
   params = {int, typed_data_type, int, typed_data},
-},
+},]]
 ColorSubTable = {
   params = {enum, int, int, enum, typed_data_type, typed_data},
   enums = {
@@ -658,6 +672,64 @@ GetUniformLocation = {
 },
 --[[GetVertexAttrib = {},]] -- overloading
 --[[GetVertexAttribPointer = {},]] -- wat
+
+Hint = {
+  params = {enum, enum},
+  enums = {
+    "FOG_HINT GENERATE_MIPMAP_HINT LINE_SMOOTH_HINT PERSPECTIVE_CORRECTION_HINT POINT_SMOOTH_HINT POLYGON_SMOOTH_HINT TEXTURE_COMPRESSION_HINT FRAGMENT_SHADER_DERIVATIVE_HINT",
+    "FASTEST NICEST DONT_CARE",
+  },
+},
+Histogram = {
+  params = {enum, int, enum, boolean},
+  enums = {
+    "HISTOGRAM PROXY_HISTOGRAM",
+    nil,
+    "ALPHA ALPHA4 ALPHA8 ALPHA12 ALPHA16 LUMINANCE LUMINANCE4 LUMINANCE8 LUMINANCE12 LUMINANCE16 LUMINANCE_ALPHA LUMINANCE4_ALPHA4 LUMINANCE6_ALPHA2 LUMINANCE8_ALPHA8 LUMINANCE12_ALPHA4 LUMINANCE12_ALPHA12 LUMINANCE16_ALPHA16 R3_G3_B2 RGB RGB4 RGB5 RGB8 RGB10 RGB12 RGB16 RGBA RGBA2 RGBA4 RGB5_A1 RGBA8 RGB10_A2 RGBA12 RGBA16",
+  }
+},
+
+Index = {
+  func = "glIndexi",
+  params = {int},
+},
+--[[IndexMask = {params = {uint},},]] -- odd, I don't have the right number of parameters somehow?
+--[[IndexPointer = {},]] -- this is just questionable
+InitNames = {
+  params = {},
+},
+--[[InterleavedArrays = {},]] -- hmph
+IsBuffer = {
+  params = {buffer},
+  returntype = boolean,
+},
+IsEnabled = {
+  params = {enum},
+  returntype = boolean,
+  enums = {
+    "ALPHA_TEST AUTO_NORMAL BLEND COLOR_ARRAY COLOR_LOGIC_OP COLOR_MATERIAL COLOR_SUM COLOR_TABLE CONVOLUTION_1D CONVOLUTION_2D CULL_FACE DEPTH_TEST DITHER EDGE_FLAG_ARRAY FOG FOG_COORD_ARRAY HISTOGRAM INDEX_ARRAY INDEX_LOGIC_OP  LIGHTING LINE_SMOOTH LINE_STIPPLE MAP1_COLOR_4 MAP1_INDEX MAP1_NORMAL MAP1_TEXTURE_COORD_1 MAP1_TEXTURE_COORD_2 MAP1_TEXTURE_COORD_3 MAP1_TEXTURE_COORD_4 MAP2_COLOR_4 MAP2_INDEX MAP2_NORMAL MAP2_TEXTURE_COORD_1 MAP2_TEXTURE_COORD_2 MAP2_TEXTURE_COORD_3 MAP2_TEXTURE_COORD_4 MAP2_VERTEX_3 MAP2_VERTEX_4 MINMAX MULTISAMPLE NORMAL_ARRAY NORMALIZE POINT_SMOOTH POINT_SPRITE POLYGON_SMOOTH POLYGON_OFFSET_FILL POLYGON_OFFSET_LINE POLYGON_OFFSET_POINT POLYGON_STIPPLE POST_COLOR_MATRIX_COLOR_TABLE POST_CONVOLUTION_COLOR_TABLE RESCALE_NORMAL SAMPLE_ALPHA_TO_COVERAGE SAMPLE_ALPHA_TO_ONE SAMPLE_COVERAGE SCISSOR_TEST SECONDARY_COLOR_ARRAY SEPARABLE_2D STENCIL_TEST TEXTURE_1D TEXTURE_2D TEXTURE_3D TEXTURE_COORD_ARRAY TEXTURE_CUBE_MAP TEXTURE_GEN_Q TEXTURE_GEN_R TEXTURE_GEN_S TEXTURE_GEN_T VERTEX_ARRAY VERTEX_PROGRAM_POINT_SIZE VERTEX_PROGRAM_TWO_SIDE" -- missing: CLIP_PLANEi LIGHTi
+  },
+},
+IsList = {
+  params = {list},
+  returntype = boolean,
+},
+IsProgram = {
+  params = {program},
+  returntype = boolean,
+},
+IsQuery = {
+  params = {query},
+  returntype = boolean,
+},
+IsShader = {
+  params = {shader},
+  returntype = boolean,
+},
+IsTexture = {
+  params = {texture},
+  returntype = boolean,
+},
 
 
 PointSize = {
