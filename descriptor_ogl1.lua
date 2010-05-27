@@ -917,6 +917,53 @@ PushName = {
   params = {int},
 },
 
+RasterPos2 = {
+  func = "glRasterPos2f",
+  params = {float, float},
+},
+RasterPos3 = {
+  func = "glRasterPos3f",
+  params = {float, float, float},
+},
+RasterPos4 = {
+  func = "glRasterPos4f",
+  params = {float, float, float, float},
+},
+ReadBuffer = {
+  params = {enum},
+  enums = {
+    "FRONT_LEFT FRONT_RIGHT BACK_LEFT BACK_RIGHT FRONT BACK LEFT RIGHT" -- missing GL_AUXi
+  },
+},
+--[[ReadPixels = {},]] -- complex
+Rect = {
+  func = "glRectf",
+  params = {float, float, float, float},
+},
+RenderMode = {
+  params = {enum},
+  enums = {
+    "RENDER SELECT FEEDBACK",
+  },
+  returntype = int,
+},
+ResetHistogram = {
+  params = {enum},
+  enums = {
+    "HISTOGRAM",
+  },
+},
+ResetMinmax = {
+  params = {enum},
+  enums = {
+    "MINMAX",
+  }
+},
+Rotate = {
+  func = "glRotatef",
+  params = {float, float, float, float},
+},
+
 TexImage = {
   {
     func = "glTexImage1D",
@@ -946,4 +993,5 @@ data.EvalMesh = {"EvalMesh1", "EvalMesh2"}
 data.EvalPoint = {"EvalPoint1", "EvalPoint2"}
 data.MapGrid = {"MapGrid1", "MapGrid2"}
 data.MultiTexCoord = {"MultiTexCoord1", "MultiTexCoord2", "MultiTexCoord3", "MultiTexCoord4"}
+data.RasterPos = {"RasterPos2", "RasterPos3", "RasterPos4"}
 
