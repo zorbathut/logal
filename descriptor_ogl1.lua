@@ -990,7 +990,64 @@ ShadeModel = {
 ShaderSource = {
   params = {shader, table(string)},
 },
+StencilFunc = {
+  params = {enum, int, int},
+  enums = {
+    "NEVER LESS LEQUAL GREATER GEQUAL EQUAL NOTEQUAL ALWAYS",
+    nil,
+    nil,
+  },
+},
+StencilFuncSeparate = {
+  params = {enum, enum, int, int},
+  enums = {
+    "FRONT BACK FRONT_AND_BACK",
+    "NEVER LESS LEQUAL GREATER GEQUAL EQUAL NOTEQUAL ALWAYS",
+    nil,
+    nil,
+  }
+},
+StencilMaskSeparate = {
+  params = {enum, int},
+  enums = {
+    "FRONT BACK FRONT_AND_BACK",
+    nil,
+  }
+},
+StencilOp = {
+  params = {enum, enum, enum},
+  enums = {
+    "KEEP ZERO REPLACE INCR INCR_WRAP DECR DECR_WRAP INVERT",
+    "KEEP ZERO REPLACE INCR INCR_WRAP DECR DECR_WRAP INVERT",
+    "KEEP ZERO REPLACE INCR INCR_WRAP DECR DECR_WRAP INVERT",
+  }
+},
+StencilOpSeparate = {
+  params = {enum, enum, enum, enum},
+  enums = {
+    "FRONT BACK FRONT_AND_BACK",
+    "KEEP ZERO REPLACE INCR INCR_WRAP DECR DECR_WRAP INVERT",
+    "KEEP ZERO REPLACE INCR INCR_WRAP DECR DECR_WRAP INVERT",
+    "KEEP ZERO REPLACE INCR INCR_WRAP DECR DECR_WRAP INVERT",
+  }
+},
 
+TexCoord1 = {
+  func = "glTexCoord1f",
+  params = {float},
+},
+TexCoord2 = {
+  func = "glTexCoord2f",
+  params = {float, float},
+},
+TexCoord3 = {
+  func = "glTexCoord3f",
+  params = {float, float, float},
+},
+TexCoord4 = {
+  func = "glTexCoord4f",
+  params = {float, float, float, float},
+},
 
 TexImage = {
   {
@@ -1022,4 +1079,4 @@ data.EvalPoint = {"EvalPoint1", "EvalPoint2"}
 data.MapGrid = {"MapGrid1", "MapGrid2"}
 data.MultiTexCoord = {"MultiTexCoord1", "MultiTexCoord2", "MultiTexCoord3", "MultiTexCoord4"}
 data.RasterPos = {"RasterPos2", "RasterPos3", "RasterPos4"}
-
+data.TexCoord = {"TexCoord1", "TexCoord2", "TexCoord3", "TexCoord4"}
