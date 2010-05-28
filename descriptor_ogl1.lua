@@ -964,6 +964,34 @@ Rotate = {
   params = {float, float, float, float},
 },
 
+SampleCoverage = {
+  params = {float, boolean},
+},
+Scale = {
+  func = "glScalef",
+  params = {float, float, float},
+},
+Scissor = {
+  params = {int, int, int, int},
+},
+SecondaryColor = {
+  func = "glSecondaryColor3f",
+  params = {float, float, float},
+},
+--[[SecondaryColorPointer = {},]] -- hurf, also durf
+--[[SelectBuffer = {},]] -- difficult.
+--[[SeparableFilter2D = {},]] -- difficult.
+ShadeModel = {
+  params = {enum},
+  enums = {
+    "FLAT SMOOTH",
+  },
+},
+ShaderSource = {
+  params = {shader, table(string)},
+},
+
+
 TexImage = {
   {
     func = "glTexImage1D",

@@ -191,14 +191,44 @@ types.table = function(typ)
   local tok = "table_" .. typ
   
   if not types[tok] then
-    types[tok] = {
-      stdprocess =
+    if typ == "GLstring" then
+      types[tok] = {
+        stdprocess =
+[[if(!(lua_istable(L, INDEX)))
+  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+PARAMNAME1 = lua_objlen(L, INDEX);
+PARAMNAME2 = new const GLchar*[PARAMNAME1];
+PARAMNAME3 = new GLint[PARAMNAME1];
+for(int i = 0; i < PARAMNAME1; i++) {
+  lua_pushnumber(L, i + 1);
+  lua_gettable(L, INDEX);
+  const char *strdat;
+  size_t len;
+  if(!(lua_isstring(L, INDEX)))
+    std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+  strdat = lua_tolstring(L, -1, &len);
+  PARAMNAME3[i] = len;
+  PARAMNAME2[i] = new GLchar[len + 1];
+  memcpy((void*)PARAMNAME2[i], strdat, len + 1);  // technically we're breaking const-correctness here
+  lua_pop(L, 1);
+}]],
+        stdcleanup =
+[[for(int i = 0; i < PARAMNAME1; i++)
+  delete [] PARAMNAME2[i];
+delete [] PARAMNAME2;
+delete [] PARAMNAME3;]],
+        type = {"int", "const GLchar **", "GLint *"},
+      }
+    else
+      types[tok] = {
+        stdprocess =
 ([[if(!(lua_istable(L, INDEX)))
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
 PARAMNAME2 = (TYPE*)snagTable<TYPE>(L, INDEX, &PARAMNAME1);]]):gsub("TYPE", typ),
-      stdcleanup = [[free(PARAMNAME2);]],
-      type = {"int", typ .. " *"},
-    }
+        stdcleanup = [[free(PARAMNAME2);]],
+        type = {"int", typ .. " *"},
+      }
+    end
   end
   
   return tok
