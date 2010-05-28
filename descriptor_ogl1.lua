@@ -1048,7 +1048,11 @@ TexCoord4 = {
   func = "glTexCoord4f",
   params = {float, float, float, float},
 },
+--[[TexCoordPointer = {},]] -- client state is hard
+--[[TexEnv = {},]] -- need better overloading
+--[[TexGen = {},]] -- need better overloading
 
+--[[
 TexImage = {
   {
     func = "glTexImage1D",
@@ -1064,6 +1068,46 @@ TexImage = {
       nil,
     }
   }
+},]]  -- complicated to do data safety
+
+--[[TexParameter = {},]] -- need better overloading
+--[[TexSubImage = {},]] -- need better overloading
+Translate = {
+  func = "glTranslatef",
+  params = {float, float, float},
+},
+--[[Uniform = {},]] -- need better overloading
+--[[UnmapBuffer = {},]] -- oh man.
+UseProgram = {
+  params = {program},
+},
+ValidateProgram = {
+  params = {program},
+},
+Vertex2 = {
+  func = "glVertex2f",
+  params = {float, float},
+},
+Vertex3 = {
+  func = "glVertex3f",
+  params = {float, float, float},
+},
+Vertex4 = {
+  func = "glVertex4f",
+  params = {float, float, float, float},
+},
+--[[VertexAttrib = {},]] -- need better overloading
+--[[VertexAttribPointer = {},]] -- everything that is terrible
+Viewport = {
+  params = {int, int, int, int},
+},
+WindowPos2 = {
+  func = "glWindowPos2f",
+  params = {float, float},
+},
+WindowPos3 = {
+  func = "glWindowPos3f",
+  params = {float, float, float},
 },
 
 }
@@ -1080,3 +1124,5 @@ data.MapGrid = {"MapGrid1", "MapGrid2"}
 data.MultiTexCoord = {"MultiTexCoord1", "MultiTexCoord2", "MultiTexCoord3", "MultiTexCoord4"}
 data.RasterPos = {"RasterPos2", "RasterPos3", "RasterPos4"}
 data.TexCoord = {"TexCoord1", "TexCoord2", "TexCoord3", "TexCoord4"}
+data.Vertex = {"Vertex2", "Vertex3", "Vertex4"}
+data.WindowPos = {"WindowPos2", "WindowPos3"}
