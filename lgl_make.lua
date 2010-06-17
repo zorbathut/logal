@@ -1,5 +1,10 @@
 
-local fil = io.open("lgl.cpp", "w")
+local params = {...}
+local filename = params[1]
+assert(filename)
+
+local fil = io.open(filename, "w")
+assert(fil)
 
 fil:write(
 [[
