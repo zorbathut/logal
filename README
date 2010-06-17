@@ -1,0 +1,7 @@
+LGL is a set of Lua OpenGL bindings. It is computer-generated from a Lua description of the OpenGL function parameters.
+
+It is intended that this will eventually cover all current versions of OpenGL and OpenGLES. Right now, it's limited to partial coverage of OpenGL 2.1.
+
+LGL currently depends on GLee, though I plan to remove this dependency in future versions.
+
+LGL is not currently intended for production use, and needs a lot of shakedown before it is. Nevertheless, it's being actively used in my games at http://www.mandible.net, from July 2010 and on.
