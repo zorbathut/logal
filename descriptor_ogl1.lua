@@ -1126,3 +1126,54 @@ data.RasterPos = {"RasterPos2", "RasterPos3", "RasterPos4"}
 data.TexCoord = {"TexCoord1", "TexCoord2", "TexCoord3", "TexCoord4"}
 data.Vertex = {"Vertex2", "Vertex3", "Vertex4"}
 data.WindowPos = {"WindowPos2", "WindowPos3"}
+
+
+
+options = {
+  asymmetric = {
+    -- ALL masks
+    CLIENT_ALL_ATTRIB_BITS = true,
+    
+    -- Enum collisions. These are all either bitmasks or glBegin paramters.
+    -- 0
+    NONE = true,
+    POINTS = true,
+    ZERO = true,
+    --NO_ERROR = true,
+    
+    -- 1
+    CLIENT_PIXEL_STORE_BIT = true,
+    CURRENT_BIT = true,
+    ONE = true,
+    LINES = true,
+    
+    -- 2
+    LINE_LOOP = true,
+    CLIENT_VERTEX_ARRAY_BIT = true,
+    POINT_BIT = true,
+    
+    -- 4
+    TRIANGLES = true,
+    LINE_BIT = true,
+    
+    -- 8
+    POLYGON_BIT = true,
+    QUAD_STRIP = true,
+    
+    -- 256
+    DEPTH_BUFFER_BIT = true,
+    ACCUM = true,
+    
+    -- 512
+    NEVER = true,
+    ACCUM_BUFFER_BIT = true,
+    
+    -- 1024
+    FRONT_LEFT = true,
+    STENCIL_BUFFER_BIT = true,
+    
+    -- 4096
+    TRANSFORM_BIT = true,
+    TEXTURE_WIDTH = true,
+  },
+}

@@ -83,7 +83,7 @@ types.int = {
   stdprocess = 
 [[if(!(lua_isnumber(L, INDEX)))
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
-PARAMNAME = lua_tonumber(L, INDEX);
+PARAMNAME = (GLint)lua_tonumber(L, INDEX);
 if((double)PARAMNAME != lua_tonumber(L, INDEX))
   std_error(L, HELP, "Non-integer in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));]],
   returncode = "lua_pushnumber(L, rv);",
@@ -251,7 +251,7 @@ types.enum_offset = function (prefix, cap)
       stdprocess =
 ([[if(!(lua_isnumber(L, INDEX)))
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
-PARAMNAME = lua_tonumber(L, INDEX);
+PARAMNAME = (GLenum)lua_tonumber(L, INDEX);
 if(PARAMNAME <= 0 || PARAMNAME > GL_ENUMCAP)
   std_error(L, HELP, "ID out of bounds in FUNCNAME for parameter PARAMNAME");
 PARAMNAME = PARAMNAME + GL_ENUMORIGIN0 - 1;]]):gsub("ENUMORIGIN", prefix):gsub("ENUMCAP", cap),
@@ -266,7 +266,7 @@ types.index = {
   stdprocess = 
 [[if(!(lua_isnumber(L, INDEX)))
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
-PARAMNAME = lua_tonumber(L, INDEX);
+PARAMNAME = (GLint)lua_tonumber(L, INDEX);
 if((double)PARAMNAME != lua_tonumber(L, INDEX))
   std_error(L, HELP, "Non-integer in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));
 PARAMNAME = PARAMNAME + 1;]],
@@ -364,7 +364,8 @@ types.output_items_size = function(size_det)
     types[tok] = {
       input_indices = 0,
       stdprocess = size_det:gsub("PARAMNAME", "PARAMNAME1") .. [[
-PARAMNAME2 = NULL;]],
+
+PARAMNAME2 = 0;]],
       param = "PARAMNAME1, &PARAMNAME2",
       type = {"int", "int"},
       name = {"items_length_maximum", "items_length_real"},
@@ -455,6 +456,7 @@ do
   setfenv(lf, descriptor_table)
   lf()
   data = descriptor_table.data
+  options = descriptor_table.options
 end
 
 local enum_list = {}
@@ -502,21 +504,55 @@ fil:write(
 [[map<string, GLenum> enum_map;
 map<GLenum, string> enum_map_reverse;
 
-static void enum_add(GLenum enu, const string &text) {
+#ifdef WIN32
+#define WINDOWS_DEBUG_OUTPUT
+#endif
+
+#ifdef WINDOWS_DEBUG_OUTPUT
+#include <windows.h>
+#endif
+
+bool broken = false;
+static void enum_add(GLenum enu, const string &text, bool asymmetric = false) {
   assert(enum_map.count(text) == 0);
-  assert(enum_map_reverse.count(enu) == 0);
-  
-  assert(enu != (GLenum)-1);
   
   enum_map[text] = enu;
-  enum_map_reverse[enu] = text;
+  
+  if(!asymmetric) {
+    if(enum_map_reverse.count(enu)) {
+      broken = true;
+      
+      #ifdef WINDOWS_DEBUG_OUTPUT
+        OutputDebugString("ERROR: collision");
+        OutputDebugString(text.c_str());
+        OutputDebugString(enum_map_reverse[enu].c_str());
+        char bf[30];
+        sprintf(bf, "%d", enu);
+        OutputDebugString(bf);
+        OutputDebugString("--");
+      #endif
+    }
+    
+    if(enu == (GLenum)-1) {
+      broken = true;
+      
+      #ifdef WINDOWS_DEBUG_OUTPUT
+        OutputDebugString("ERROR: negative one");
+        OutputDebugString(text.c_str());
+        OutputDebugString("--");
+      #endif
+    }
+    assert(enu != (GLenum)-1);
+    
+    enum_map_reverse[enu] = text;
+  }
 }
 
 static GLenum enum_retrieve(const string &text) {
   map<string, GLenum>::iterator itr = enum_map.find(text);
   if(itr != enum_map.end())
     return itr->second;
-  return -1;
+  return (GLenum)-1;
 }
 
 static const char enum_error[] = "LGL_ENUM_ERROR";
@@ -544,9 +580,9 @@ static GLenum enum_bitmask_retrieve(const string &text) {
 static void enum_init() {
 ]])
 for _, v in pairs(enu_alpha) do
-  fil:write("  enum_add(GL_" .. v .. ", \"" .. v .. "\");\n")
+  fil:write("  enum_add(GL_" .. v .. ", \"" .. v .. "\"" .. (options.asymmetric[v] and ", true" or "") .. ");\n")
 end
-fil:write("}\n\n")
+fil:write("  assert(!broken);\n}\n\n")
 
 
 --[[ how shards look:
