@@ -167,9 +167,14 @@ ColorMaterial = {
     "EMISSION AMBIENT DIFFUSE SPECULAR AMBIENT_AND_DIFFUSE",
   }
 },
---[[ColorPointer = {
-  params = {int, typed_data_type, int, typed_data},
-},]]
+ColorPointer = {
+  params = {int, typed_data_type, literal(0), typed_data_preserved},
+  enums = {
+    nil,
+    "SHORT INT FLOAT DOUBLE",
+    nil,
+  }
+},
 ColorSubTable = {
   params = {enum, int, int, enum, typed_data_type, typed_data},
   enums = {
@@ -1048,7 +1053,14 @@ TexCoord4 = {
   func = "glTexCoord4f",
   params = {float, float, float, float},
 },
---[[TexCoordPointer = {},]] -- client state is hard
+TexCoordPointer = {
+  params = {int, typed_data_type, literal(0), typed_data_preserved},
+  enums = {
+    nil,
+    "SHORT INT FLOAT DOUBLE",
+    nil,
+  }
+},
 --[[TexEnv = {},]] -- need better overloading
 --[[TexGen = {},]] -- need better overloading
 
@@ -1098,6 +1110,14 @@ Vertex4 = {
 },
 --[[VertexAttrib = {},]] -- need better overloading
 --[[VertexAttribPointer = {},]] -- everything that is terrible
+VertexPointer = {
+  params = {int, typed_data_type, literal(0), typed_data_preserved},
+  enums = {
+    nil,
+    "SHORT INT FLOAT DOUBLE",
+    nil,
+  }
+},
 Viewport = {
   params = {int, int, int, int},
 },

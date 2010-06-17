@@ -114,6 +114,8 @@ else if(type == GL_UNSIGNED_INT || type == GL_INT || type == GL_UNSIGNED_INT_8_8
   PARAMNAME = snagTable<int>(L, INDEX, &PARAMNAME_size);
 else if(type == GL_FLOAT)
   PARAMNAME = snagTable<float>(L, INDEX, &PARAMNAME_size);
+else if(type == GL_DOUBLE)
+  PARAMNAME = snagTable<double>(L, INDEX, &PARAMNAME_size);
 else if(type == GL_BITMAP)
   std_error(L, HELP, "GL_BITMAP not supported in FUNCNAME");
 else if(type == GL_3_BYTES)
@@ -122,6 +124,29 @@ else
   std_error(L, HELP, "Unrecognized type in FUNCNAME");]],
   stdcleanup = [[free(PARAMNAME);]],
   type = "void *",
+}
+-- Technically this doesn't free on shutdown, but right now I'm okay with that.
+types.typed_data_preserved = {
+  stdprocess =
+[[int PARAMNAME_size;
+if(PARAMNAME) free(PARAMNAME);
+if(type == GL_UNSIGNED_BYTE || type == GL_BYTE || type == GL_UNSIGNED_BYTE_3_3_2 || type == GL_UNSIGNED_BYTE_2_3_3_REV)
+  PARAMNAME = snagTable<unsigned char>(L, INDEX, &PARAMNAME_size);
+else if(type == GL_UNSIGNED_SHORT || type == GL_SHORT || type == GL_UNSIGNED_SHORT_5_6_5 || type == GL_UNSIGNED_SHORT_5_6_5_REV || type == GL_UNSIGNED_SHORT_4_4_4_4 || type == GL_UNSIGNED_SHORT_4_4_4_4_REV || type == GL_UNSIGNED_SHORT_5_5_5_1 || type == GL_UNSIGNED_SHORT_1_5_5_5_REV || type == GL_2_BYTES)
+  PARAMNAME = snagTable<short>(L, INDEX, &PARAMNAME_size);
+else if(type == GL_UNSIGNED_INT || type == GL_INT || type == GL_UNSIGNED_INT_8_8_8_8 || type == GL_UNSIGNED_INT_8_8_8_8_REV || type == GL_UNSIGNED_INT_10_10_10_2 || type == GL_UNSIGNED_INT_2_10_10_10_REV || type == GL_4_BYTES)
+  PARAMNAME = snagTable<int>(L, INDEX, &PARAMNAME_size);
+else if(type == GL_FLOAT)
+  PARAMNAME = snagTable<float>(L, INDEX, &PARAMNAME_size);
+else if(type == GL_DOUBLE)
+  PARAMNAME = snagTable<double>(L, INDEX, &PARAMNAME_size);
+else if(type == GL_BITMAP)
+  std_error(L, HELP, "GL_BITMAP not supported in FUNCNAME");
+else if(type == GL_3_BYTES)
+  std_error(L, HELP, "GL_3_BYTES not supported in FUNCNAME");
+else
+  std_error(L, HELP, "Unrecognized type in FUNCNAME");]],
+  type = "static void *",
 }
 
 types.rawdata_alignment = {
@@ -146,8 +171,12 @@ types.rawdata_table = {
 } else if(alignment == GL_FLOAT) {
   PARAMNAME2 = snagTable<float>(L, INDEX, &PARAMNAME1);
   PARAMNAME1 = PARAMNAME1 * sizeof(float);
+} else if(alignment == GL_DOUBLE) {
+  PARAMNAME2 = snagTable<double>(L, INDEX, &PARAMNAME1);
+  PARAMNAME1 = PARAMNAME1 * sizeof(float);
 } else
   std_error(L, HELP, "Unrecognized type in FUNCNAME");]],
+  stdcleanup = [[free(PARAMNAME2);]],
   type = {"int", "void *"},
 }
 types.rawdata_table_indexed = {
@@ -166,8 +195,13 @@ types.rawdata_table_indexed = {
   PARAMNAME2 = snagTable<float>(L, INDEX, &PARAMNAME1);
   PARAMNAME1 = PARAMNAME1 * sizeof(float);
   index = index * sizeof(float);
+} else if(alignment == GL_DOUBLE) {
+  PARAMNAME2 = snagTable<double>(L, INDEX, &PARAMNAME1);
+  PARAMNAME1 = PARAMNAME1 * sizeof(double);
+  index = index * sizeof(double);
 } else
   std_error(L, HELP, "Unrecognized type in FUNCNAME");]],
+  stdcleanup = [[free(PARAMNAME2);]],
   type = {"int", "void *"},
 }
 
@@ -256,6 +290,20 @@ if(PARAMNAME <= 0 || PARAMNAME > GL_ENUMCAP)
   std_error(L, HELP, "ID out of bounds in FUNCNAME for parameter PARAMNAME");
 PARAMNAME = PARAMNAME + GL_ENUMORIGIN0 - 1;]]):gsub("ENUMORIGIN", prefix):gsub("ENUMCAP", cap),
       type = "GLenum",
+    }
+  end
+  
+  return tok
+end
+
+types.literal = function(literal)
+  local tok = "literal_" .. literal
+  
+  if not types[tok] then
+    types[tok] = {
+      input_indices = 0,
+      name = tostring(literal),
+      nocreate = true,
     }
   end
   
@@ -699,7 +747,7 @@ local function do_shard(dat, local_name, name)
         table.insert(returns, {index = id, text = typ.returnpackage})
       end
     end
-    param_input_final = current_index
+    param_input_final = current_index - 1
   end
   
   -- then we check the parameter count
@@ -851,8 +899,12 @@ fil:write("  {NULL, NULL}\n")
 fil:write("};\n\n")
 
 fil:write(
-[[int luaopen_lgl(lua_State *L) {
-  enum_init();
+[[static bool internal_initted = false;
+int luaopen_lgl(lua_State *L) {
+  if(!internal_initted) {
+    enum_init();
+    internal_initted = true;
+  }
   luaL_openlib(L, "gl", lgl, 0);
   return 1;
 }
