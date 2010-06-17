@@ -23,8 +23,8 @@ fil:write(
 #include <cassert>
 
 #include "GLee.h"
-#include "lua.h"
-#include "lauxlib.h"
+
+#include <lua.hpp>
 
 #include <stdarg.h>
 #include <stdlib.h>
