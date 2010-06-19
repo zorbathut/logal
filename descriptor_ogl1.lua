@@ -1088,11 +1088,29 @@ Translate = {
   func = "glTranslatef",
   params = {float, float, float},
 },
---[[Uniform = {},]] -- need better overloading
+
+-- we're not doing arrays yet, and we should be
+Uniform1 = {
+  func = "glUniform1f",
+  params = {int, float},
+},
+Uniform2 = {
+  func = "glUniform2f",
+  params = {int, float, float},
+},
+Uniform3 = {
+  func = "glUniform3f",
+  params = {int, float, float, float},
+},
+Uniform4 = {
+  func = "glUniform4f",
+  params = {int, float, float, float, float},
+},
 --[[UnmapBuffer = {},]] -- oh man.
 UseProgram = {
   params = {program},
 },
+
 ValidateProgram = {
   params = {program},
 },
@@ -1108,7 +1126,23 @@ Vertex4 = {
   func = "glVertex4f",
   params = {float, float, float, float},
 },
---[[VertexAttrib = {},]] -- need better overloading
+-- we're not doing arrays yet, and we should be
+VertexAttrib1 = {
+  func = "glVertexAttrib1f",
+  params = {int, float},
+},
+VertexAttrib2 = {
+  func = "glVertexAttrib2f",
+  params = {int, float, float},
+},
+VertexAttrib3 = {
+  func = "glVertexAttrib3f",
+  params = {int, float, float, float},
+},
+VertexAttrib4 = {
+  func = "glVertexAttrib4f",
+  params = {int, float, float, float, float},
+},
 --[[VertexAttribPointer = {},]] -- everything that is terrible
 VertexPointer = {
   params = {int, typed_data_type, literal(0), typed_data_preserved},
@@ -1144,10 +1178,15 @@ data.MapGrid = {"MapGrid1", "MapGrid2"}
 data.MultiTexCoord = {"MultiTexCoord1", "MultiTexCoord2", "MultiTexCoord3", "MultiTexCoord4"}
 data.RasterPos = {"RasterPos2", "RasterPos3", "RasterPos4"}
 data.TexCoord = {"TexCoord1", "TexCoord2", "TexCoord3", "TexCoord4"}
+data.Uniform = {"Uniform1", "Uniform2", "Uniform3", "Uniform4"}
 data.Vertex = {"Vertex2", "Vertex3", "Vertex4"}
+data.VertexAttrib = {"VertexAttrib1", "VertexAttrib2", "VertexAttrib3", "VertexAttrib4"}
 data.WindowPos = {"WindowPos2", "WindowPos3"}
 
 
+capabilities = {
+  ARB_fragment_shader = true,
+}
 
 options = {
   asymmetric = {
