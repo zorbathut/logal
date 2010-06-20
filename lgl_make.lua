@@ -323,7 +323,7 @@ PARAMNAME = PARAMNAME + 1;]],
 types.int_or_enum = {
   stdprocess = 
 [[if(lua_isnumber(L, INDEX)) {
-  PARAMNAME = lua_tonumber(L, INDEX);
+  PARAMNAME = (GLint)lua_tonumber(L, INDEX);
   if((double)PARAMNAME != lua_tonumber(L, INDEX))
     std_error(L, HELP, "Non-integer in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));
 } else if(lua_isstring(L, INDEX)) {
