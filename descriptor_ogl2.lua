@@ -637,11 +637,11 @@ GetQuery = {
 --[[GetSeparableFilter = {},]] -- rargh
 GetShader = {
   func = "glGetShaderiv",
-  params = {shader, enum, output_item("GLint")},
+  params = {shader, enum, output_enum_as_int},
   enums = {
     nil,
     "SHADER_TYPE DELETE_STATUS COMPILE_STATUS INFO_LOG_LENGTH SHADER_SOURCE_LENGTH",
-    nil,
+    "TRUE FALSE",
   }
 },
 GetShaderInfoLog = {
@@ -1082,7 +1082,15 @@ TexImage = {
   }
 },]]  -- complicated to do data safety
 
---[[TexParameter = {},]] -- need better overloading
+TexParameter = {  -- missing stuff due to a lack of overloading
+  func = "glTexParameterf",
+  params = {enum, enum, enum},
+  enums = {
+    "TEXTURE_1D TEXTURE_2D TEXTURE_3D TEXTURE_CUBE_MAP",
+    "TEXTURE_MIN_FILTER TEXTURE_MAG_FILTER TEXTURE_MIN_LOD TEXTURE_MAX_LOD TEXTURE_BASE_LEVEL TEXTURE_MAX_LEVEL TEXTURE_WRAP_S TEXTURE_WRAP_T TEXTURE_WRAP_R TEXTURE_PRIORITY TEXTURE_COMPARE_MODE TEXTURE_COMPARE_FUNC DEPTH_TEXTURE_MODE GENERATE_MIPMAP",
+    "NEAREST LINEAR NEAREST_MIPMAP_NEAREST LINEAR_MIPMAP_NEAREST NEAREST_MIPMAP_LINEAR LINEAR_MIPMAP_LINEAR",
+  }
+},
 --[[TexSubImage = {},]] -- need better overloading
 Translate = {
   func = "glTranslatef",
@@ -1184,9 +1192,6 @@ data.VertexAttrib = {"VertexAttrib1", "VertexAttrib2", "VertexAttrib3", "VertexA
 data.WindowPos = {"WindowPos2", "WindowPos3"}
 
 
-capabilities = {
-  ARB_fragment_shader = true,
-}
 
 options = {
   asymmetric = {
@@ -1198,6 +1203,7 @@ options = {
     NONE = true,
     POINTS = true,
     ZERO = true,
+    FALSE = true, -- this line worries me
     --NO_ERROR = true,
     
     -- 1

@@ -234,7 +234,7 @@ types.table = function(typ)
       types[tok] = {
         stdprocess =
 [[if(!(lua_istable(L, INDEX)))
-  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME1");
 PARAMNAME1 = lua_objlen(L, INDEX);
 PARAMNAME2 = new const GLchar*[PARAMNAME1];
 PARAMNAME3 = new GLint[PARAMNAME1];
@@ -243,8 +243,8 @@ for(int i = 0; i < PARAMNAME1; i++) {
   lua_gettable(L, INDEX);
   const char *strdat;
   size_t len;
-  if(!(lua_isstring(L, INDEX)))
-    std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+  if(!(lua_isstring(L, -1)))
+    std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME1");
   strdat = lua_tolstring(L, -1, &len);
   PARAMNAME3[i] = len;
   PARAMNAME2[i] = new GLchar[len + 1];
@@ -479,7 +479,12 @@ types.output_enum = {
   param = "&PARAMNAME",
   type = "GLenum",
 }
-  
+types.output_enum_as_int = {
+  input_indices = 0,
+  returnpackage = "lua_pushstring(L, enum_lookup((GLenum)PARAMNAME));",
+  param = "&PARAMNAME",
+  type = "GLint",
+}
 
 types.program = types.int
 types.shader = types.int
@@ -487,24 +492,46 @@ types.query = types.int
 types.list = types.int
 types.texture = types.int
 types.buffer = types.int
+types.fbo = types.int
+types.rbo = types.int
 
 local data
 do
-  local descriptor_table = {}
+  data = {}
+  options = {}
   
-  for k, v in pairs(types) do
-    if type(v) == "function" then
-      descriptor_table[k] = v
-    else
-      descriptor_table[k] = k
+  local function accumulate(path)
+    local descriptor_table = {}
+    
+    for k, v in pairs(types) do
+      if type(v) == "function" then
+        descriptor_table[k] = v
+      else
+        descriptor_table[k] = k
+      end
+    end
+    
+    local lf = assert(loadfile(path))
+    setfenv(lf, descriptor_table)
+    lf()
+    local ldata = descriptor_table.data
+    local loptions = descriptor_table.options
+    
+    for k, v in pairs(ldata) do
+      assert(not data[k])
+      data[k] = v
+    end
+    
+    if loptions and loptions.asymmetric then
+      options.asymmetric = options.asymmetric or {}
+      for k, _ in pairs(loptions.asymmetric) do
+        options.asymmetric[k] = true
+      end
     end
   end
   
-  local lf = assert(loadfile("descriptor_ogl1.lua"))
-  setfenv(lf, descriptor_table)
-  lf()
-  data = descriptor_table.data
-  options = descriptor_table.options
+  accumulate("descriptor_ogl2.lua")
+  accumulate("descriptor_ogl3.lua")
 end
 
 local enum_list = {}
