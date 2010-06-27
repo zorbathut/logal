@@ -26,8 +26,9 @@ fil:write(
 
 #include <lua.hpp>
 
-#include <stdarg.h>
-#include <stdlib.h>
+#include <cstdarg>
+#include <cstdlib>
+#include <cstring>
 
 using namespace std;
 
