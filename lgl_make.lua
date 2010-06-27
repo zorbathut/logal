@@ -631,12 +631,17 @@ static GLenum enum_retrieve(const string &text) {
   return (GLenum)-1;
 }
 
-static const char enum_error[] = "LGL_ENUM_ERROR";
+map<GLenum, string> errors;
 static const char *enum_lookup(GLenum enu) {
   map<GLenum, string>::iterator itr = enum_map_reverse.find(enu);
   if(itr != enum_map_reverse.end())
     return itr->second.c_str();
-  return enum_error;
+  if(errors.count(enu))
+    return errors[enu].c_str();
+  char error[64];
+  sprintf(error, "LGL_ENUM_ERROR_%d", enu);
+  errors[enu] = error;
+  return errors[enu].c_str();
 }
 
 static GLenum enum_bitmask_retrieve(const string &text) {
