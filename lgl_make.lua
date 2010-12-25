@@ -76,7 +76,9 @@ types.enum = {
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
 PARAMNAME = enum_retrieve(lua_tostring(L, INDEX));
 if(PARAMNAME == (GLenum)-1)
-  std_error(L, HELP, "Unknown enum in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));]],
+  std_error(L, HELP, "Unknown enum in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));
+if(!(ENUMCOMPARE))
+  break;]],
   returncode = "lua_pushstring(L, enum_lookup(rv));",
   type = "GLenum",
 }
@@ -100,8 +102,13 @@ PARAMNAME = lua_toboolean(L, INDEX);]],
 }
 
 types.typed_data_type = {
-  stdprocess = types.enum.stdprocess,
-  type = types.enum.type,
+  stdprocess =  -- todo: value checking
+[[if(!(lua_isstring(L, INDEX)))
+  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+PARAMNAME = enum_retrieve(lua_tostring(L, INDEX));
+if(PARAMNAME == (GLenum)-1)
+  std_error(L, HELP, "Unknown enum in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));]],
+  type = "GLenum",
   name = "type",
 }
 types.typed_data = {
@@ -217,7 +224,7 @@ types.table_fixed = function (typ, num)
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
 if(lua_objlen(L, INDEX) != FIXEDLEN)
   std_error(L, HELP, "Table size error in FUNCNAME for parameter PARAMNAME - Expected %d, got FIXEDLEN", lua_objlen(L, INDEX));
-PARAMNAME = (TYPE*)snagTable<TYPE>(L, INDEX);]]):gsub("FIXEDLEN", tostring(num)):gsub("TYPE", typ),
+PARAMNAME = (#TYPE#*)snagTable<#TYPE#>(L, INDEX);]]):gsub("FIXEDLEN", tostring(num)):gsub("#TYPE#", typ),
       stdcleanup = [[free(PARAMNAME);]],
       type = typ .. " *",
     }
@@ -264,7 +271,7 @@ delete [] PARAMNAME3;]],
         stdprocess =
 ([[if(!(lua_istable(L, INDEX)))
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
-PARAMNAME2 = (TYPE*)snagTable<TYPE>(L, INDEX, &PARAMNAME1);]]):gsub("TYPE", typ),
+PARAMNAME2 = (#TYPE#*)snagTable<#TYPE#>(L, INDEX, &PARAMNAME1);]]):gsub("#TYPE#", typ),
         stdcleanup = [[free(PARAMNAME2);]],
         type = {"int", typ .. " *"},
       }
@@ -714,6 +721,21 @@ local function do_shard(dat, local_name, name)
       addsub("INDEX", tostring(param.index))
       current_index = current_index + (typ.input_indices or 1)
       
+      -- comparing valid enums so we can branch on that
+      if dat.enums and dat.enums[id] then
+        local comparestring
+        for enum in dat.enums[id]:gmatch("([^%s]+)") do
+          if comparestring then
+            comparestring = comparestring .. " || "
+          else
+            comparestring = ""
+          end
+          comparestring = comparestring .. "PARAMNAME == GL_" .. enum
+        end
+        
+        addsub("ENUMCOMPARE", comparestring)
+      end
+      
       -- distill variable names out
       do
         local typcustom = dat.names and dat.names[id]
@@ -748,12 +770,12 @@ local function do_shard(dat, local_name, name)
           table.insert(realnames, (typcustom and typcustom[i]) or (typbasic and typbasic[i]) or def)
           
           addsub("PARAMNAME" .. i, realnames[i])
-          addsub("TYPE" .. i, types[i])
+          addsub("#TYPE#" .. i, types[i])
         end
         
         if #types == 1 then
           addsub("PARAMNAME", realnames[1])
-          addsub("TYPE", types[1])
+          addsub("#TYPE#", types[1])
         end
         
         param.names = realnames

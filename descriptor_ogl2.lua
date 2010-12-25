@@ -115,6 +115,7 @@ BufferData = {
 BufferSubData = {
   params = {enum, index, rawdata_alignment, rawdata_table_indexed},
   names = {nil, "index", nil, nil},
+  enums = {"ARRAY_BUFFER ELEMENT_ARRAY_BUFFER PIXEL_PACK_BUFFER PIXEL_UNPACK_BUFFER"},
 },
 
 CallList = {
@@ -530,11 +531,20 @@ GenTextures = {
   params = {int, output_table("GLuint", "param1")},
 },
 Get = { -- HIGHLY HIGHLY INCOMPLETE
-  func = "glGetFloatv",
-  params = {enum, output_table("GLfloat", 16)},
-  enums = {
-    "COLOR_MATRIX MODELVIEW_MATRIX TEXTURE_MATRIX PROJECTION_MATRIX",
-    nil,
+  {
+    func = "glGetFloatv",
+    params = {enum, output_table("GLfloat", 16)},
+    enums = {
+      "COLOR_MATRIX MODELVIEW_MATRIX TEXTURE_MATRIX PROJECTION_MATRIX",
+      nil,
+    },
+  }, {
+    func = "glGetIntegerv",
+    params = {enum, output_int},
+    enums = {
+      "COLOR_MATRIX_STACK_DEPTH MODELVIEW_STACK_DEPTH NAME_STACK_DEPTH PROJECTION_STACK_DEPTH TEXTURE_STACK_DEPTH",
+      nil,
+    },
   },
 },
 GetActiveAttrib = {
@@ -793,7 +803,7 @@ MapGrid2 = {
 MatrixMode = {
   params = {enum},
   enums = {
-    "MODELVIEW PROJECTION TEXTURE COLOR",
+    "MODELVIEW PROJECTION TEXTURE",
   },
 },
 Minmax = {
