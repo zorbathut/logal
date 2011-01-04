@@ -1,7 +1,19 @@
 
 local params = {...}
-local filename = params[1]
+local mode = params[1]
+local filename = params[2]
 assert(filename)
+
+local OLMODE, olmode
+
+if mode == "gl2.0" then
+  OLMODE = "GL"
+  olmode = "gl"
+elseif mode == "al1.0" then
+  OLMODE = "AL"
+  olmode = "al"
+end
+
 
 local fil = io.open(filename, "w")
 assert(fil)
@@ -16,14 +28,13 @@ fil:write(
   You probably shouldn't edit it manually.
 *********************************/
 
-#define GL_GLEXT_PROTOTYPES
-
 #include <map>
 #include <string>
 #include <algorithm>
 
 #include <cassert>
 
+#define GL_GLEXT_PROTOTYPES
 #include "GLee.h"
 
 #include <lua.hpp>
