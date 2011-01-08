@@ -31,8 +31,8 @@ if not params then
 end
 
 
-
+local gendeps = ursa.absolute_from{{"lgl_make.lua", "descriptor_ogl2.lua", "descriptor_ogl3.lua", "descriptor_ogl_base.lua"}}
 return {generate = function (target, parameters)
-  return ursa.rule{target, deps, ursa.system_template{"cd glorp/lgl && lua lgl_make.lua gl2.0 ../../$TARGET " .. parameters}}
+  return ursa.rule{target, gendeps, ursa.system_template{"cd glorp/lgl && lua lgl_make.lua gl2.0 ../../$TARGET " .. parameters}}
 end,
 header = ursa.absolute_from{"lgl.h"}}  -- not happy about any of this, we'll need to come up with a better solution for embed2
