@@ -1,51 +1,14 @@
 local params = ...
 local types = params.types
-assert(types)
 
-types.float = {
-  stdprocess = 
-[[if(!(lua_isnumber(L, INDEX)))
-  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
-PARAMNAME = lua_tonumber(L, INDEX);]],
-  type = "GLfloat",
-}
-types.enum = {
-  stdprocess = 
-[[if(!(lua_isstring(L, INDEX)))
-  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
-PARAMNAME = enum_retrieve(lua_tostring(L, INDEX));
-if(PARAMNAME == (GLenum)-1)
-  std_error(L, HELP, "Unknown enum in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));
-if(!(ENUMCOMPARE))
-  break;]],
-  returncode = "lua_pushstring(L, enum_lookup(rv));",
-  type = "GLenum",
-}
-types.int = {
-  stdprocess = 
-[[if(!(lua_isnumber(L, INDEX)))
-  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
-PARAMNAME = (GLint)lua_tonumber(L, INDEX);
-if((double)PARAMNAME != lua_tonumber(L, INDEX))
-  std_error(L, HELP, "Non-integer in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));]],
-  returncode = "lua_pushnumber(L, rv);",
-  type = "GLint",
-}
-types.boolean = {
-  stdprocess = 
-[[if(!(lua_isboolean(L, INDEX)))
-  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
-PARAMNAME = lua_toboolean(L, INDEX);]],
-  returncode = "lua_pushboolean(L, rv);",
-  type = "GLboolean",
-}
+assert(loadfile("descriptor_base.lua"))(types, "GL")
 
 types.typed_data_type = {
   stdprocess =  -- todo: value checking
 [[if(!(lua_isstring(L, INDEX)))
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
 PARAMNAME = enum_retrieve(lua_tostring(L, INDEX));
-if(PARAMNAME == (GLenum)-1)
+if(PARAMNAME == (XLenum)-1)
   std_error(L, HELP, "Unknown enum in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));]],
   type = "GLenum",
   name = "type",
