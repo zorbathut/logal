@@ -8,20 +8,23 @@ if type(params) ~= "table" then params = nil end -- commandline input
 
 --[[-Wabi -Waddress -Waggregate-return -Wall -Warray-bounds -Wcast-align -Wcast-qual -Wchar-subscripts -Wclobbered -Wcomment -Wcomments -Wconversion -Wcoverage-mismatch -Wctor-dtor-privacy -Wdisabled-optimization -Wempty-body -Wendif-labels -Wextra -Wfloat-equal -Wformat -Wformat-nonliteral -Wformat-security -Wignored-qualifiers -Wimplicit -Wimport -Winit-self -Winline -Winvalid-pch -Wlogical-op -Wlong-long -Wmain -Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn -Wmultichar -Wnon-template-friend -Wnon-virtual-dtor -Wold-style-cast -Woverlength-strings -Woverloaded-virtual -Wpacked -Wpadded -Wparentheses -Wpointer-arith -Wredundant-decls -Wreorder -Wreturn-type -Wsequence-point -Wshadow -Wsign-compare -Wsign-conversion -Wsign-promo -Wstack-protector -Wstrict-aliasing -Wstrict-null-sentinel -Wstrict-overflow -Wswitch -Wswitch-default -Wswitch-enum -Wsystem-headers -Wtrigraphs -Wtype-limits -Wundef -Wuninitialized -Wunknown-pragmas -Wunreachable-code -Wunsafe-loop-optimizations -Wunused -Wunused-function -Wunused-label -Wunused-macros -Wunused-parameter -Wunused-value -Wunused-variable -Wvariadic-macros -Wvla -Wvolatile-register-var -Wwrite-strings]] -- crazy warnings
 
+local gldeps = {"logal_make.lua", "descriptor_ogl2.lua", "descriptor_ogl3.lua", "descriptor_ogl_base.lua", "descriptor_base.lua"}
+local aldeps = {"logal_make.lua", "descriptor_oal1.1.lua", "descriptor_oal_base.lua", "descriptor_base.lua"}
+
 if not params then
   local objs = {}
   
   do
-    local deps = ursa.absolute_from{{"logal_make.lua", "descriptor_ogl2.lua", "descriptor_ogl3.lua", "descriptor_ogl_base.lua"}}
+    local deps = ursa.absolute_from{gldeps}
 
     ursa.rule{"lgl.cpp", deps, ursa.util.system_template{"lua logal_make.lua gl2.0 $TARGET"}}
     table.insert(objs, ursa.rule{"lgl.o", "lgl.cpp", ursa.util.system_template{"g++ -c -o $TARGET $SOURCE -DWIN32 -Wall -Wextra -Werror -O -I.."}})
   end
   
   do
-    local deps = ursa.absolute_from{{"logal_make.lua", "descriptor_oal.lua", "descriptor_oal_base.lua"}}
+    local deps = ursa.absolute_from{aldeps}
 
-    ursa.rule{"lal.cpp", deps, ursa.util.system_template{"lua logal_make.lua al1.0 $TARGET"}}
+    ursa.rule{"lal.cpp", deps, ursa.util.system_template{"lua logal_make.lua al1.1 $TARGET"}}
     table.insert(objs, ursa.rule{"lal.o", "lal.cpp", ursa.util.system_template{"g++ -c -o $TARGET $SOURCE -DWIN32 -Wall -Wextra -Werror -O -I.."}})
   end
 
@@ -31,7 +34,7 @@ if not params then
 end
 
 
-local gendeps = ursa.absolute_from{{"logal_make.lua", "descriptor_ogl2.lua", "descriptor_ogl3.lua", "descriptor_ogl_base.lua", "descriptor_oal1p1.lua"}}
+local gendeps = ursa.absolute_from{{aldeps, gldeps}}
 return {
 lgl_generate = function (target, parameters)
   return ursa.rule{target, gendeps, ursa.system_template{"cd glorp/logal && lua logal_make.lua gl2.0 ../../$TARGET " .. parameters}}

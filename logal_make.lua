@@ -308,6 +308,8 @@ local function do_shard(dat, local_name, name)
       conversions[id] = function(x) return x end
       local function addsub(src, dst)
         local cp = conversions[id]
+        assert(src)
+        assert(dst)
         conversions[id] = function(x) return cp(x):gsub(src, dst) end
       end
       

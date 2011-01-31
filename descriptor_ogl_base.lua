@@ -135,53 +135,7 @@ PARAMNAME = (#TYPE#*)snagTable<#TYPE#>(L, INDEX);]]):gsub("FIXEDLEN", tostring(n
   return tok
 end
 
-types.table = function(typ)
-  typ = "GL" .. typ
-  local tok = "table_" .. typ
-  
-  if not types[tok] then
-    if typ == "GLstring" then
-      types[tok] = {
-        stdprocess =
-[[if(!(lua_istable(L, INDEX)))
-  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME1");
-PARAMNAME1 = lua_objlen(L, INDEX);
-PARAMNAME2 = new const GLchar*[PARAMNAME1];
-PARAMNAME3 = new GLint[PARAMNAME1];
-for(int i = 0; i < PARAMNAME1; i++) {
-  lua_pushnumber(L, i + 1);
-  lua_gettable(L, INDEX);
-  const char *strdat;
-  size_t len;
-  if(!(lua_isstring(L, -1)))
-    std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME1");
-  strdat = lua_tolstring(L, -1, &len);
-  PARAMNAME3[i] = len;
-  PARAMNAME2[i] = new GLchar[len + 1];
-  memcpy((void*)PARAMNAME2[i], strdat, len + 1);  // technically we're breaking const-correctness here
-  lua_pop(L, 1);
-}]],
-        stdcleanup =
-[[for(int i = 0; i < PARAMNAME1; i++)
-  delete [] PARAMNAME2[i];
-delete [] PARAMNAME2;
-delete [] PARAMNAME3;]],
-        type = {"int", "const GLchar **", "GLint *"},
-      }
-    else
-      types[tok] = {
-        stdprocess =
-([[if(!(lua_istable(L, INDEX)))
-  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
-PARAMNAME2 = (#TYPE#*)snagTable<#TYPE#>(L, INDEX, &PARAMNAME1);]]):gsub("#TYPE#", typ),
-        stdcleanup = [[free(PARAMNAME2);]],
-        type = {"int", typ .. " *"},
-      }
-    end
-  end
-  
-  return tok
-end
+
 
 local eo_caps = {}
 types.enum_offset = function (prefix, cap)
@@ -256,13 +210,6 @@ types.enum_custom = {
   type = "GLenum",
   custom = true,
 }
-types.string = {
-  stdprocess =
-[[if(!(lua_isstring(L, INDEX)))
-  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
-PARAMNAME = (GLchar*)lua_tostring(L, INDEX);]],
-  type = "GLchar *",
-}
 types.string_ubyte = {
   returncode = "lua_pushstring(L, (const char*)rv);",
   type = "const GLubyte *",
@@ -291,29 +238,6 @@ types.localvar = function (name)
   return tok
 end
 
-
-types.output_table = function(typ, siz)
-  local tok = "output_table_" .. typ .. "__" .. siz
-  
-  if not types[tok] then
-    types[tok] = {
-      input_indices = 0,
-      stdprocess = "PARAMNAME = new " .. typ .. "[" .. siz .. "];",
-      returnpackage =
-([[lua_newtable(L);
-for(int i = 0; i < (%s); i++) {
-  lua_pushnumber(L, i + 1);
-  lua_pushnumber(L, PARAMNAME[i]);
-  lua_settable(L, -3);
-}]]):format(siz),
-      stdcleanup = "delete [] PARAMNAME;",
-      type = typ .. " *",
-      
-    }
-  end
-  
-  return tok
-end
 
 types.output_items_size = function(size_det)
   local tok = "output_items_size_" .. size_det
@@ -375,25 +299,6 @@ types.output_items_data_string = {
   returnpackage = "lua_pushlstring(L, PARAMNAME, items_length_real);",
   stdcleanup = "delete [] PARAMNAME;",
   type = "char *",
-}
-
-types.output_int = {
-  input_indices = 0,
-  returnpackage = "lua_pushnumber(L, PARAMNAME);",
-  param = "&PARAMNAME",
-  type = "GLint",
-}
-types.output_enum = {
-  input_indices = 0,
-  returnpackage = "lua_pushstring(L, enum_lookup(PARAMNAME));",
-  param = "&PARAMNAME",
-  type = "GLenum",
-}
-types.output_enum_as_int = {
-  input_indices = 0,
-  returnpackage = "lua_pushstring(L, enum_lookup((GLenum)PARAMNAME));",
-  param = "&PARAMNAME",
-  type = "GLint",
 }
 
 types.program = types.int
