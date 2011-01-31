@@ -47,6 +47,22 @@ PARAMNAME = (]]..prefix..[[char*)lua_tostring(L, INDEX);]],
   returncode = "lua_pushstring(L, rv);",
   type = "const " .. prefix .. "char *",
 }
+types.int_or_enum = {
+  stdprocess = 
+[[if(lua_isnumber(L, INDEX)) {
+  PARAMNAME = (]]..prefix..[[int)lua_tonumber(L, INDEX);
+  if((double)PARAMNAME != lua_tonumber(L, INDEX))
+    std_error(L, HELP, "Non-integer in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));
+} else if(lua_isstring(L, INDEX)) {
+  PARAMNAME = (]]..prefix..[[int)enum_retrieve(lua_tostring(L, INDEX));
+  if(PARAMNAME == -1)
+    std_error(L, HELP, "Unknown enum in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));
+} else {
+  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+}]],
+  type = prefix .. "int",
+}
+
 
 -- return simple types
 types.output_int = {
@@ -137,4 +153,22 @@ for(int i = 0; i < (%s); i++) {
   
   return tok
 end
-
+types.table_fixed = function (typ, num)
+  typ = prefix .. typ
+  local tok = "table_fixed_" .. typ .. "_" .. num
+  
+  if not types[tok] then
+    types[tok] = {
+      stdprocess =
+([[if(!(lua_istable(L, INDEX)))
+  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+if(lua_objlen(L, INDEX) != FIXEDLEN)
+  std_error(L, HELP, "Table size error in FUNCNAME for parameter PARAMNAME - Expected %d, got FIXEDLEN", lua_objlen(L, INDEX));
+PARAMNAME = (#TYPE#*)snagTable<#TYPE#>(L, INDEX);]]):gsub("FIXEDLEN", tostring(num)):gsub("#TYPE#", typ),
+      stdcleanup = [[free(PARAMNAME);]],
+      type = typ .. " *",
+    }
+  end
+  
+  return tok
+end

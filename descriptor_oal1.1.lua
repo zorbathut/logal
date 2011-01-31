@@ -67,6 +67,36 @@ DeleteSources = {
   params = {table("uint")},
 },
 
+Source = {
+  {
+    func = "alSourcei",
+    params = {source, enum, int_or_enum},
+    enums = {
+      nil,
+      "SOURCE_RELATIVE SOURCE_TYPE LOOPING BUFFER BUFFERS_QUEUED BUFFERS_PROCESSED SAMPLE_OFFSET BYTE_OFFSET",
+      "TRUE FALSE",
+    }
+  },
+  {
+    func = "alSourcef",
+    params = {source, enum, float},
+    enums = {
+      nil,
+      "REFERENCE_DISTANCE ROLLOFF_FACTOR MAX_DISTANCE PITCH CONE_INNER_ANGLE CONE_OUTER_ANGLE CONE_OUTER_GAIN SEC_OFFSET GAIN",
+      nil,
+    }
+  },
+  {
+    func = "alSourcefv",
+    params = {source, enum, table_fixed("float", 3)},
+    enums = {
+      nil,
+      "POSITION VELOCITY",
+      nil,
+    }
+  }
+},
+
 SourcePlay = {
   params = {source},
 },
@@ -124,5 +154,8 @@ DistanceModel = {
 
 options = {
   asymmetric = {
+    -- 0
+    NONE = true,
+    FALSE = true,
   }
 }
