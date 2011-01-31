@@ -2,4 +2,4 @@ lgl.cpp
 lgl.o
 lal.cpp
 lal.o
-.ursa.cache*
+.ursa*
