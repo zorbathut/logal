@@ -9,9 +9,11 @@ local OLMODE, olmode
 if mode == "gl2.0" then
   OLMODE = "GL"
   olmode = "gl"
-elseif mode == "al1.0" then
+elseif mode == "al1.1" then
   OLMODE = "AL"
   olmode = "al"
+else
+  assert(false)
 end
 
 
@@ -34,9 +36,24 @@ fil:write(
 
 #include <cassert>
 
+]])
+
+if olmode == "gl" then
+  fil:write(
+[[
 #define GL_GLEXT_PROTOTYPES
 #include "GLee.h"
 
+]])
+elseif olmode == "al" then
+  fil:write(
+[[
+#include "al/al.h"
+
+]])
+end
+
+fil:write([[
 #include <lua.hpp>
 
 #include <cstdarg>
@@ -76,7 +93,11 @@ template<typename T> static void *snagTable(lua_State *L, int index, int *ct_out
 ]])
 
 local types = {}
-assert(loadfile("descriptor_ogl_base.lua")){types = types}
+if olmode == "gl" then
+  assert(loadfile("descriptor_ogl_base.lua")){types = types}
+elseif olmode == "al" then
+  assert(loadfile("descriptor_oal_base.lua")){types = types}
+end
 
 local data
 do
@@ -113,8 +134,12 @@ do
     end
   end
   
-  accumulate("descriptor_ogl2.lua")
-  accumulate("descriptor_ogl3.lua")
+  if olmode == "gl" then
+    accumulate("descriptor_ogl2.lua")
+    accumulate("descriptor_ogl3.lua")
+  else
+    accumulate("descriptor_oal1.1.lua")
+  end
 end
 
 local enum_list = {}
@@ -158,9 +183,9 @@ for k in pairs(enum_list) do
   table.insert(enu_alpha, k)
 end
 table.sort(enu_alpha)
-fil:write(
-[[map<string, GLenum> enum_map;
-map<GLenum, string> enum_map_reverse;
+fil:write(((
+[[static map<string, XLenum> enum_map;
+static map<XLenum, string> enum_map_reverse;
 
 #ifdef WIN32
 #define WINDOWS_DEBUG_OUTPUT
@@ -170,8 +195,8 @@ map<GLenum, string> enum_map_reverse;
 #include <windows.h>
 #endif
 
-bool broken = false;
-static void enum_add(GLenum enu, const string &text, bool asymmetric = false) {
+static bool broken = false;
+static void enum_add(XLenum enu, const string &text, bool asymmetric = false) {
   assert(enum_map.count(text) == 0);
   
   enum_map[text] = enu;
@@ -191,7 +216,7 @@ static void enum_add(GLenum enu, const string &text, bool asymmetric = false) {
       #endif
     }
     
-    if(enu == (GLenum)-1) {
+    if(enu == (XLenum)-1) {
       broken = true;
       
       #ifdef WINDOWS_DEBUG_OUTPUT
@@ -200,22 +225,22 @@ static void enum_add(GLenum enu, const string &text, bool asymmetric = false) {
         OutputDebugString("--");
       #endif
     }
-    assert(enu != (GLenum)-1);
+    assert(enu != (XLenum)-1);
     
     enum_map_reverse[enu] = text;
   }
 }
 
-static GLenum enum_retrieve(const string &text) {
-  map<string, GLenum>::iterator itr = enum_map.find(text);
+static XLenum enum_retrieve(const string &text) {
+  map<string, XLenum>::iterator itr = enum_map.find(text);
   if(itr != enum_map.end())
     return itr->second;
-  return (GLenum)-1;
+  return (XLenum)-1;
 }
 
-map<GLenum, string> errors;
-static const char *enum_lookup(GLenum enu) {
-  map<GLenum, string>::iterator itr = enum_map_reverse.find(enu);
+static map<XLenum, string> errors;
+static const char *enum_lookup(XLenum enu) {
+  map<XLenum, string>::iterator itr = enum_map_reverse.find(enu);
   if(itr != enum_map_reverse.end())
     return itr->second.c_str();
   if(errors.count(enu))
@@ -226,8 +251,8 @@ static const char *enum_lookup(GLenum enu) {
   return errors[enu].c_str();
 }
 
-static GLenum enum_bitmask_retrieve(const string &text) {
-  GLenum rv = 0;
+static XLenum enum_bitmask_retrieve(const string &text) {
+  XLenum rv = 0;
   string::const_iterator st = text.begin();
   string::const_iterator ed = find(st, text.end(), ' ');
   while(st != text.end()) {
@@ -241,9 +266,9 @@ static GLenum enum_bitmask_retrieve(const string &text) {
 }
 
 static void enum_init() {
-]])
+]]):gsub("XL", OLMODE)))
 for _, v in pairs(enu_alpha) do
-  fil:write("  enum_add(GL_" .. v .. ", \"" .. v .. "\"" .. (options.asymmetric[v] and ", true" or "") .. ");\n")
+  fil:write(string.format('  enum_add(%s_%s, "%s"%s);\n', OLMODE, v, v, (options.asymmetric[v] and ", true" or "")))
 end
 fil:write("  assert(!broken);\n}\n\n")
 
@@ -287,7 +312,7 @@ local function do_shard(dat, local_name, name)
       end
       
       addsub("\n", "\n    ")
-      addsub("FUNCNAME", "gl." .. name)
+      addsub("FUNCNAME", olmode .. "." .. name)
       addsub("HELP", "help_" .. name)
       
       local param = {}
@@ -305,7 +330,7 @@ local function do_shard(dat, local_name, name)
           else
             comparestring = ""
           end
-          comparestring = comparestring .. "PARAMNAME == GL_" .. enum
+          comparestring = comparestring .. "PARAMNAME == " .. OLMODE .. "_" .. enum
         end
         
         addsub("ENUMCOMPARE", comparestring)
@@ -425,9 +450,9 @@ local function do_shard(dat, local_name, name)
   if dat.func then
     ln = dat.func
   elseif local_name then
-    ln = "gl" .. local_name
+    ln = olmode .. local_name
   else
-    ln = "gl" .. name
+    ln = olmode .. name
   end
   fil:write(ln .. "(")
   do
@@ -500,7 +525,7 @@ for _, name in pairs(ites) do
   local dat = data[name]
   
   fil:write("static const char help_" .. name .. "[] = \"(gotta write help)\";\n")
-  fil:write("static int lgl_" .. name .. "(lua_State *L) {\n\n")
+  fil:write("static int l" .. olmode .. "_" .. name .. "(lua_State *L) {\n\n")
   
   if #dat > 0 then
     for _, v in ipairs(dat) do
@@ -514,32 +539,32 @@ for _, name in pairs(ites) do
     do_shard(dat, name, name)
   end
 
-  fil:write("  std_error(L, help_" .. name .. ", \"Incorrect number of parameters in gl." .. name .. ". Got %d\", lua_gettop(L));\n")
+  fil:write("  std_error(L, help_" .. name .. ", \"Incorrect number of parameters in " .. olmode .. "." .. name .. ". Got %d\", lua_gettop(L));\n")
   
   fil:write("  return 0;\n")
   fil:write("}\n\n")
 end
 
 
-fil:write("\n\nstatic const luaL_reg lgl[] = {\n")
+fil:write("\n\nstatic const luaL_reg l" .. olmode .. "[] = {\n")
 for _, v in pairs(ites) do
-  fil:write('  {"' .. v .. '", lgl_' .. v .. '},\n')
+  fil:write('  {"' .. v .. '", l' .. olmode .. '_' .. v .. '},\n')
 end
 fil:write("  {NULL, NULL}\n")
 fil:write("};\n\n")
 
-fil:write(
+fil:write(((
 [[static bool internal_initted = false;
 extern "C" {
-  int luaopen_lgl(lua_State *L) {
+  int luaopen_lxl(lua_State *L) {
     if(!internal_initted) {
       enum_init();
       internal_initted = true;
     }
-    luaL_openlib(L, "gl", lgl, 0);
+    luaL_openlib(L, "xl", lxl, 0);
     return 1;
   }
 }
-]])
+]]):gsub("xl", olmode)))
 
 fil:close()

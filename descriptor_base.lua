@@ -23,11 +23,11 @@ types.int = {
   stdprocess = 
 [[if(!(lua_isnumber(L, INDEX)))
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
-PARAMNAME = (]]..prefix..[[XLint)lua_tonumber(L, INDEX);
+PARAMNAME = (]]..prefix..[[int)lua_tonumber(L, INDEX);
 if((double)PARAMNAME != lua_tonumber(L, INDEX))
   std_error(L, HELP, "Non-integer in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));]],
   returncode = "lua_pushnumber(L, rv);",
-  type = prefix .. "XLint",
+  type = prefix .. "int",
 }
 types.boolean = {
   stdprocess = 
@@ -35,5 +35,5 @@ types.boolean = {
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
 PARAMNAME = lua_toboolean(L, INDEX);]],
   returncode = "lua_pushboolean(L, rv);",
-  type = prefix .. "XLboolean",
+  type = prefix .. "boolean",
 }

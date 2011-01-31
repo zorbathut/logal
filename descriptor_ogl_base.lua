@@ -8,7 +8,7 @@ types.typed_data_type = {
 [[if(!(lua_isstring(L, INDEX)))
   std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
 PARAMNAME = enum_retrieve(lua_tostring(L, INDEX));
-if(PARAMNAME == (XLenum)-1)
+if(PARAMNAME == (GLenum)-1)
   std_error(L, HELP, "Unknown enum in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));]],
   type = "GLenum",
   name = "type",
