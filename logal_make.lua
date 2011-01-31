@@ -48,7 +48,7 @@ if olmode == "gl" then
 elseif olmode == "al" then
   fil:write(
 [[
-#include "al/al.h"
+#include "AL/al.h"
 
 ]])
 end
