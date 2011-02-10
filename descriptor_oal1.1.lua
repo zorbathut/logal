@@ -43,6 +43,26 @@ GetError = {
   returntype = enum,
 },
 
+GetSource = {
+  {
+    func = "alGetSourcef",
+    params = {source, enum, output_float},
+    enums = {
+      nil,
+      "GAIN"
+    },
+  },
+  {
+    func = "alGetSourcei",
+    params = {source, enum, output_enum},
+    enums = {
+      nil,
+      "SOURCE_STATE",
+      returntype = "INITIAL PLAYING PAUSED STOPPED",
+    },
+  },
+},
+
 -- This is where IsExtensionPresent/GetProcAddress/GetEnumValue live, but we're not bothering.
 
 Listener = {

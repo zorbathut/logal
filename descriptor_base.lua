@@ -71,6 +71,12 @@ types.output_int = {
   param = "&PARAMNAME",
   type = prefix .. "int",
 }
+types.output_float = {
+  input_indices = 0,
+  returnpackage = "lua_pushnumber(L, PARAMNAME);",
+  param = "&PARAMNAME",
+  type = prefix .. "float",
+}
 types.output_enum = {
   input_indices = 0,
   returnpackage = "lua_pushstring(L, enum_lookup(PARAMNAME));",
