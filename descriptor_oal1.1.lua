@@ -72,8 +72,8 @@ Listener = {
     enums = {"GAIN"},
   },
   {
-    func = "alListener3f",
-    params = {enum, float, float, float},
+    func = "alListenerfv",
+    params = {enum, table_fixed("float", 3)},
     enums = {"POSITION VELOCITY"},
   },
   -- missing ORIENTATION
