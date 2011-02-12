@@ -93,7 +93,7 @@ Source = {
     params = {source, enum, int_or_enum},
     enums = {
       nil,
-      "SOURCE_RELATIVE SOURCE_TYPE LOOPING BUFFER BUFFERS_QUEUED BUFFERS_PROCESSED SAMPLE_OFFSET BYTE_OFFSET",
+      "SOURCE_RELATIVE SOURCE_TYPE LOOPING BUFFER BUFFERS_QUEUED BUFFERS_PROCESSED SAMPLE_OFFSET BYTE_OFFSET EXT_MIXER_OVERRIDE_FLAG",
       "TRUE FALSE",
     }
   },
@@ -112,6 +112,15 @@ Source = {
     enums = {
       nil,
       "POSITION VELOCITY",
+      nil,
+    }
+  },
+  {
+    func = "alSourcefv",
+    params = {source, enum, table_fixed("float", 2)},
+    enums = {
+      nil,
+      "EXT_MIXER_OVERRIDE",
       nil,
     }
   }

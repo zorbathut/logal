@@ -49,6 +49,7 @@ elseif olmode == "al" then
   fil:write(
 [[
 #include "AL/al.h"
+#include "AL/alext.h"
 
 ]])
 end
