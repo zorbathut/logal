@@ -15,7 +15,9 @@ if(PARAMNAME == (GLenum)-1)
 }
 types.typed_data = {
   stdprocess =
-[[int PARAMNAME_size;
+[[if(!(lua_istable(L, INDEX)))
+  break;
+int PARAMNAME_size;
 if(type == GL_UNSIGNED_BYTE || type == GL_BYTE || type == GL_UNSIGNED_BYTE_3_3_2 || type == GL_UNSIGNED_BYTE_2_3_3_REV)
   PARAMNAME = snagTable<unsigned char>(L, INDEX, &PARAMNAME_size);
 else if(type == GL_UNSIGNED_SHORT || type == GL_SHORT || type == GL_UNSIGNED_SHORT_5_6_5 || type == GL_UNSIGNED_SHORT_5_6_5_REV || type == GL_UNSIGNED_SHORT_4_4_4_4 || type == GL_UNSIGNED_SHORT_4_4_4_4_REV || type == GL_UNSIGNED_SHORT_5_5_5_1 || type == GL_UNSIGNED_SHORT_1_5_5_5_REV || type == GL_2_BYTES)
@@ -151,6 +153,16 @@ types.literal = function(literal)
   
   return tok
 end
+types.int_forcecasted_void = {
+  stdprocess = 
+[[if(!(lua_isnumber(L, INDEX)))
+  std_error(L, HELP, "Parameter type mismatch in FUNCNAME for parameter PARAMNAME");
+PARAMNAME = (void*)(int)lua_tonumber(L, INDEX);
+if((double)(int)PARAMNAME != lua_tonumber(L, INDEX))
+  std_error(L, HELP, "Non-integer in FUNCNAME for parameter PARAMNAME: %s", lua_tostring(L, INDEX));]],
+  returncode = "lua_pushnumber(L, rv);",
+  type = "void *",
+}
 
 types.index = {
   stdprocess = 

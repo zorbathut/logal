@@ -169,11 +169,20 @@ ColorMaterial = {
   }
 },
 ColorPointer = {
-  params = {int, typed_data_type, literal(0), typed_data_preserved},
-  enums = {
-    nil,
-    "SHORT INT FLOAT DOUBLE",
-    nil,
+  {
+    params = {int, typed_data_type, literal(0), typed_data_preserved},
+    enums = {
+      nil,
+      "SHORT INT FLOAT DOUBLE",
+      nil,
+    }
+  }, {
+    params = {int, enum, int, int_forcecasted_void},
+    enums = {
+      nil,
+      "SHORT INT FLOAT DOUBLE",
+      nil,
+    }
   }
 },
 ColorSubTable = {
@@ -411,10 +420,20 @@ DrawBuffer = {
 },
 --[[DrawBuffers = {},]] -- disabled because we need some kind of table(enum) that also supports GL_AUXi and friends
 DrawElements = {
-  params = {enum, localvar("param4_size"), typed_data_type, typed_data},
-  enums = {
-    "POINTS LINE_STRIP LINE_LOOP LINES TRIANGLE_STRIP TRIANGLE_FAN TRIANGLES QUAD_STRIP QUADS POLYGON",
-  },
+  {
+    params = {enum, localvar("param4_size"), typed_data_type, typed_data},
+    enums = {
+      "POINTS LINE_STRIP LINE_LOOP LINES TRIANGLE_STRIP TRIANGLE_FAN TRIANGLES QUAD_STRIP QUADS POLYGON",
+    },
+  }, {
+    params = {enum, int, enum, int_forcecasted_void},
+    enums = {
+      "POINTS LINE_STRIP LINE_LOOP LINES TRIANGLE_STRIP TRIANGLE_FAN TRIANGLES QUAD_STRIP QUADS POLYGON",
+      nil,
+      "UNSIGNED_BYTE UNSIGNED_SHORT UNSIGNED_INT",
+      nil,
+    }
+  }
 },
 DrawPixels = {
   params = {int, int, enum, typed_data_type, typed_data},
@@ -426,13 +445,24 @@ DrawPixels = {
   }
 },
 DrawRangeElements = {
-  params = {enum, int, int, int, typed_data_type, typed_data},
-  enums = {
-    "POINTS LINE_STRIP LINE_LOOP LINES TRIANGLE_STRIP TRIANGLE_FAN TRIANGLES QUAD_STRIP QUADS POLYGON",
-    nil,
-    nil,
-    nil,
-    "UNSIGNED_BYTE UNSIGNED_SHORT UNSIGNED_INT",
+  {
+    params = {enum, int, int, int, typed_data_type, typed_data},
+    enums = {
+      "POINTS LINE_STRIP LINE_LOOP LINES TRIANGLE_STRIP TRIANGLE_FAN TRIANGLES QUAD_STRIP QUADS POLYGON",
+      nil,
+      nil,
+      nil,
+      "UNSIGNED_BYTE UNSIGNED_SHORT UNSIGNED_INT",
+    }
+  }, {
+    params = {enum, int, int, int, enum, int_forcecasted_void},
+    enums = {
+      "POINTS LINE_STRIP LINE_LOOP LINES TRIANGLE_STRIP TRIANGLE_FAN TRIANGLES QUAD_STRIP QUADS POLYGON",
+      nil,
+      nil,
+      nil,
+      "UNSIGNED_BYTE UNSIGNED_SHORT UNSIGNED_INT",
+    }
   }
 },
 
@@ -542,7 +572,7 @@ Get = { -- HIGHLY HIGHLY INCOMPLETE
     func = "glGetIntegerv",
     params = {enum, output_int},
     enums = {
-      "COLOR_MATRIX_STACK_DEPTH MODELVIEW_STACK_DEPTH NAME_STACK_DEPTH PROJECTION_STACK_DEPTH TEXTURE_STACK_DEPTH",
+      "COLOR_MATRIX_STACK_DEPTH MODELVIEW_STACK_DEPTH NAME_STACK_DEPTH PROJECTION_STACK_DEPTH TEXTURE_STACK_DEPTH MAX_ELEMENTS_VERTICES MAX_ELEMENTS_INDICES",
       nil,
     },
   },
@@ -1071,11 +1101,20 @@ TexCoord4 = {
   params = {float, float, float, float},
 },
 TexCoordPointer = {
-  params = {int, typed_data_type, literal(0), typed_data_preserved},
-  enums = {
-    nil,
-    "SHORT INT FLOAT DOUBLE",
-    nil,
+  {
+    params = {int, typed_data_type, literal(0), typed_data_preserved},
+    enums = {
+      nil,
+      "SHORT INT FLOAT DOUBLE",
+      nil,
+    }
+  }, {
+    params = {int, enum, int, int_forcecasted_void},
+    enums = {
+      nil,
+      "SHORT INT FLOAT DOUBLE",
+      nil,
+    }
   }
 },
 --[[TexEnv = {},]] -- need better overloading
@@ -1212,11 +1251,20 @@ VertexAttrib4 = {
 },
 --[[VertexAttribPointer = {},]] -- everything that is terrible
 VertexPointer = {
-  params = {int, typed_data_type, literal(0), typed_data_preserved},
-  enums = {
-    nil,
-    "SHORT INT FLOAT DOUBLE",
-    nil,
+  {
+    params = {int, typed_data_type, literal(0), typed_data_preserved},
+    enums = {
+      nil,
+      "SHORT INT FLOAT DOUBLE",
+      nil,
+    }
+  }, {
+    params = {int, enum, int, int_forcecasted_void},
+    enums = {
+      nil,
+      "SHORT INT FLOAT DOUBLE",
+      nil,
+    }
   }
 },
 Viewport = {
