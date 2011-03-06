@@ -129,6 +129,10 @@ Source = {
 SourcePlay = {
   params = {source},
 },
+SourcePlayv = { -- at some point this should be collapsed back into sourceplay
+  func = "alSourcePlayv",
+  params = {table("uint")},
+},
 SourceStop = {
   params = {source},
 },
