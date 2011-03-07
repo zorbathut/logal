@@ -81,8 +81,7 @@ template<typename T> static void *snagTable(lua_State *L, int index, int *ct_out
   int ct = lua_objlen(L, index);
   T *memblock = (T*)malloc(sizeof(T) * ct);
   for(int i = 0; i < ct; i++) {
-    lua_pushnumber(L, i + 1);
-    lua_gettable(L, index);
+    lua_rawgeti(L, index, i + 1);
     memblock[i] = (T)lua_tonumber(L, -1);
     lua_pop(L, 1);
   }
