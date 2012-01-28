@@ -41,8 +41,7 @@ fil:write(
 if olmode == "gl" then
   fil:write(
 [[
-#define GL_GLEXT_PROTOTYPES
-#include "GLee.h"
+#include "GL/glew.h"
 
 ]])
 elseif olmode == "al" then
