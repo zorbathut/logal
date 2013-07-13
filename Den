@@ -21,12 +21,12 @@ if not params then
     table.insert(objs, ursa.rule{"lgl.o", "lgl.cpp", ursa.util.system_template{"g++ -c -o $TARGET $SOURCE -DWIN32 -Wall -Wextra -Werror -O -I../.."}})
   end
   
-  do
+  --[[do
     local deps = ursa.absolute_from{aldeps}
 
     ursa.rule{"lal.cpp", deps, ursa.util.system_template{"lua logal_make.lua al1.1 $TARGET"}}
     table.insert(objs, ursa.rule{"lal.o", "lal.cpp", ursa.util.system_template{"g++ -c -o $TARGET $SOURCE -DWIN32 -Wall -Wextra -Werror -O -I../.."}})
-  end
+  end]]
 
   ursa.command{ursa.command.default, objs}
 
@@ -39,8 +39,8 @@ return {
 lgl_generate = function (target, parameters)
   return ursa.rule{target, gendeps, ursa.system_template{"cd glorp/libs/logal && lua logal_make.lua gl2.0 ../../../$TARGET " .. parameters}}
 end,
-lal_generate = function (target, parameters)
+--[[lal_generate = function (target, parameters)
   return ursa.rule{target, gendeps, ursa.system_template{"cd glorp/libs/logal && lua logal_make.lua al1.1 ../../../$TARGET " .. parameters}}
-end,
+end,]]
 lgl_header = ursa.absolute_from{"lgl.h"},
-lal_header = ursa.absolute_from{"lal.h"}}  -- not happy about any of this, we'll need to come up with a better solution for embed2
+--[[lal_header = ursa.absolute_from{"lal.h"}]]}  -- not happy about any of this, we'll need to come up with a better solution for embed2
